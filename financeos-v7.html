@@ -1,0 +1,3252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FinanceOS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0d0d10;--bg2:#13131a;--bg3:#1a1a24;--bg4:#21212e;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.12);
+  --text:#f0f0f5;--text2:#9999b3;--text3:#55556a;
+  --mono:'DM Mono',monospace;--sans:'Syne',sans-serif;
+  --up:#00d4aa;--down:#ff5c6a;--amber:#f5a623;
+  --blue:#3ecfff;--purple:#7c6af7;--pink:#e040fb;
+  --sidebar:220px;
+  --c-income:#00d4aa;--c-expense:#ff5c6a;--c-mf:#3ecfff;
+  --c-ppf:#7c6af7;--c-gold:#f5a623;--c-loans:#ff7c52;
+  --c-goals:#e040fb;--c-trade:#a29bfe;--c-insurance:#00b4d8;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14px}
+/* Layout */
+.fo-shell{display:flex;height:100vh}
+.fo-sidebar{width:var(--sidebar);background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+.fo-main{flex:1;overflow:hidden;display:flex;flex-direction:column}
+/* Sidebar */
+.fo-logo{padding:20px 18px 14px;border-bottom:1px solid var(--border)}
+.fo-logo-title{font-size:18px;font-weight:800;letter-spacing:-.3px}
+.fo-logo-title span{color:var(--up)}
+.fo-logo-sub{font-size:9px;font-family:var(--mono);color:var(--text3);text-transform:uppercase;letter-spacing:.12em;margin-top:2px}
+.fo-nav-section{padding:10px 0 4px}
+.fo-nav-label{font-size:9px;font-family:var(--mono);color:var(--text3);text-transform:uppercase;letter-spacing:.1em;padding:0 16px;margin-bottom:4px}
+.fo-nav-item{display:flex;align-items:center;gap:10px;padding:8px 16px;cursor:pointer;font-size:12px;font-weight:500;color:var(--text2);transition:all .15s;border-left:2px solid transparent;white-space:nowrap}
+.fo-nav-item:hover{color:var(--text);background:rgba(255,255,255,0.04)}
+.fo-nav-item.active{color:var(--text);background:rgba(255,255,255,0.06);border-left-color:var(--accent,var(--up))}
+.fo-nav-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;background:var(--accent,var(--text3))}
+.fo-nav-val{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--text3)}
+.fo-sidebar-footer{margin-top:auto;padding:12px 16px;border-top:1px solid var(--border);font-size:10px;font-family:var(--mono);color:var(--text3)}
+/* Topbar */
+.fo-topbar{display:flex;align-items:center;gap:12px;padding:14px 28px;border-bottom:1px solid var(--border);background:var(--bg2);flex-shrink:0}
+.fo-page-title{font-size:18px;font-weight:700}
+.fo-page-sub{font-size:11px;font-family:var(--mono);color:var(--text3);margin-top:1px}
+.fo-topbar-actions{margin-left:auto;display:flex;gap:8px;align-items:center}
+.fo-btn{padding:7px 16px;border-radius:8px;font-size:12px;font-family:var(--sans);font-weight:600;cursor:pointer;border:1px solid var(--border2);background:var(--bg3);color:var(--text);transition:all .15s}
+.fo-btn:hover{background:var(--bg4)}
+.fo-btn.primary{background:var(--accent,var(--up));border-color:transparent;color:#000}
+.fo-btn.primary:hover{opacity:.9}
+/* Content */
+.fo-content{flex:1;padding:24px 28px;overflow-y:auto}
+/* Cards */
+.fo-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:20px}
+.fo-card-title{font-size:10px;font-family:var(--mono);color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px}
+.fo-card-val{font-size:26px;font-weight:700;font-family:var(--mono)}
+.fo-card-sub{font-size:11px;color:var(--text3);margin-top:4px;font-family:var(--mono)}
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.stat-grid.three{grid-template-columns:repeat(3,1fr)}
+.stat-grid.two{grid-template-columns:repeat(2,1fr)}
+/* Table */
+.fo-table{width:100%;border-collapse:collapse;font-size:12px}
+.fo-table th{font-family:var(--mono);font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;padding:8px 12px;border-bottom:1px solid var(--border);text-align:left;white-space:nowrap}
+.fo-table td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+.fo-table tbody tr:hover{background:rgba(255,255,255,0.02)}
+.fo-table tbody tr:last-child td{border-bottom:none}
+/* Badges */
+.fo-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-family:var(--mono);font-weight:500}
+/* Modal */
+.fo-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+.fo-modal-overlay.open{opacity:1;pointer-events:all}
+.fo-modal{background:var(--bg2);border:1px solid var(--border2);border-radius:16px;width:520px;max-width:95vw;max-height:90vh;overflow-y:auto;transform:translateY(10px);transition:transform .2s}
+.fo-modal-overlay.open .fo-modal{transform:none}
+.fo-modal-header{padding:20px 24px 0;display:flex;justify-content:space-between;align-items:center}
+.fo-modal-title{font-size:16px;font-weight:700}
+.fo-modal-close{background:none;border:none;color:var(--text3);font-size:20px;cursor:pointer;padding:4px;line-height:1}
+.fo-modal-close:hover{color:var(--text)}
+.fo-modal-body{padding:20px 24px 24px}
+.fo-field{margin-bottom:14px}
+.fo-field label{display:block;font-size:11px;font-family:var(--mono);color:var(--text3);margin-bottom:5px;text-transform:uppercase;letter-spacing:.06em}
+.fo-field input,.fo-field select,.fo-field textarea{width:100%;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:9px 12px;color:var(--text);font-family:var(--mono);font-size:13px;outline:none}
+.fo-field input:focus,.fo-field select:focus{border-color:var(--accent,var(--up))}
+.fo-grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.fo-grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.fo-form-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
+.fo-btn-cancel{background:var(--bg3);border:1px solid var(--border2);color:var(--text2);border-radius:8px;padding:9px 20px;font-size:13px;cursor:pointer;font-family:var(--sans)}
+.fo-btn-submit{background:var(--accent,var(--up));border:none;color:#000;border-radius:8px;padding:9px 22px;font-size:13px;font-weight:700;cursor:pointer;font-family:var(--sans)}
+/* Empty */
+.fo-empty{text-align:center;padding:48px 20px;color:var(--text3)}
+.fo-empty .fo-empty-icon{font-size:36px;margin-bottom:12px}
+/* Progress */
+.fo-progress-track{background:var(--bg3);border-radius:4px;height:6px;overflow:hidden}
+.fo-progress-fill{height:100%;border-radius:4px;background:var(--accent,var(--up));transition:width .4s}
+/* Value colors */
+.val-up{color:var(--up)}.val-down{color:var(--down)}.val-neutral{color:var(--text2)}
+/* Net Worth hero */
+.nw-hero{background:linear-gradient(135deg,var(--bg2) 0%,var(--bg3) 100%);border:1px solid var(--border2);border-radius:16px;padding:28px;margin-bottom:20px;position:relative;overflow:hidden}
+.nw-hero::before{content:'';position:absolute;top:-40px;right:-40px;width:180px;height:180px;background:radial-gradient(circle,rgba(0,212,170,0.08) 0%,transparent 70%);border-radius:50%}
+.nw-hero-label{font-size:10px;font-family:var(--mono);color:var(--text3);text-transform:uppercase;letter-spacing:.12em;margin-bottom:8px}
+.nw-hero-val{font-size:42px;font-weight:800;font-family:var(--mono)}
+.nw-hero-sub{font-size:12px;font-family:var(--mono);color:var(--text3);margin-top:6px}
+.nw-breakdown{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-top:20px}
+.nw-item{background:var(--bg3);border-radius:8px;padding:12px}
+.nw-item-label{font-size:9px;font-family:var(--mono);color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}
+.nw-item-val{font-size:14px;font-weight:700;font-family:var(--mono)}
+/* Section header */
+.fo-section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.fo-section-title{font-size:13px;font-weight:600;font-family:var(--mono);color:var(--text2);text-transform:uppercase;letter-spacing:.08em}
+/* Confirm modal */
+.fo-confirm-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:2000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+.fo-confirm-overlay.open{opacity:1;pointer-events:all}
+.fo-confirm-box{background:var(--bg2);border:1px solid var(--border2);border-radius:14px;padding:28px;width:360px;max-width:95vw}
+.fo-confirm-title{font-size:15px;font-weight:700;color:var(--down);margin-bottom:12px}
+.fo-confirm-msg{font-family:var(--mono);font-size:13px;color:var(--text2);margin-bottom:24px;line-height:1.5}
+/* Pages */
+.fo-page{display:none}
+.fo-page.active{display:flex;flex-direction:column;height:100%}
+/* TD embed */
+#td-app{display:none;flex:1;overflow:hidden}
+#td-app.active{display:flex}
+/* EMI band */
+.emi-band{background:var(--bg3);border-radius:8px;padding:12px 16px;margin-top:10px;display:flex;gap:20px;flex-wrap:wrap}
+.emi-item label{font-size:10px;font-family:var(--mono);color:var(--text3);display:block;margin-bottom:2px}
+.emi-item span{font-size:13px;font-family:var(--mono);font-weight:600}
+/* Goal card */
+.goal-card{background:var(--bg3);border-radius:10px;padding:16px}
+.goal-card-name{font-size:14px;font-weight:600;margin-bottom:4px}
+.goal-card-meta{font-size:11px;font-family:var(--mono);color:var(--text3);margin-bottom:10px}
+/* Calc band */
+.calc-band{background:var(--bg3);border-radius:8px;padding:12px;margin-bottom:14px;display:flex;gap:24px}
+.calc-band-item label{font-size:10px;font-family:var(--mono);color:var(--text3);display:block;margin-bottom:2px}
+.calc-band-item span{font-family:var(--mono);font-weight:600}
+/* Scrollbar */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:2px}
+/* TD namespaced CSS */
+
+#td-app :root{
+  --bg: #0a0c0f;
+  --bg2: #111318;
+  --bg3: #181c22;
+  --bg4: #1e2229;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.12);
+  --text: #e8eaf0;
+  --text2: #8b909e;
+  --text3: #555b6a;
+  --up: #00d4aa;
+  --up-bg: rgba(0,212,170,0.08);
+  --down: #ff5c6a;
+  --down-bg: rgba(255,92,106,0.08);
+  --accent: #7c6af7;
+  --accent2: #3ecfff;
+  --amber: #f5a623;
+  --mono: 'DM Mono', monospace;
+  --sans: 'Syne', sans-serif;
+  --seg-intraday: #3ecfff;
+  --seg-fo: #7c6af7;
+  --seg-commodity: #f5a623;
+  --seg-us: #00d4aa;
+  --seg-lt: #ff7c52;
+  --seg-st: #e040fb;
+}
+#td-app *{ box-sizing: border-box; margin: 0; padding: 0; }
+#td-app body{ background: var(--bg); color: var(--text); font-family: var(--sans); min-height: 100vh; }
+#td-app /* ── Layout ── */
+.app{ display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; }
+#td-app .sidebar{ background: var(--bg2); border-right: 1px solid var(--border); padding: 24px 0; display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; }
+#td-app .main{ overflow-x: auto; }
+#td-app /* ── Sidebar ── */
+.logo{ padding: 0 20px 24px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+#td-app .logo-mark{ font-family: var(--mono); font-size: 18px; font-weight: 500; color: var(--text); letter-spacing: -0.5px; }
+#td-app .logo-mark span{ color: var(--accent); }
+#td-app .nav-item{ display: flex; align-items: center; gap: 10px; padding: 10px 20px; font-size: 13px; color: var(--text2); cursor: pointer; transition: all .15s; border-left: 2px solid transparent; }
+#td-app .nav-item:hover{ color: var(--text); background: rgba(255,255,255,0.03); }
+#td-app .nav-item.active{ color: var(--text); border-left-color: var(--accent); background: rgba(124,106,247,0.08); }
+#td-app .nav-dot{ width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+#td-app .sidebar-footer{ margin-top: auto; padding: 20px; border-top: 1px solid var(--border); font-size: 11px; color: var(--text3); font-family: var(--mono); }
+#td-app /* ── Top bar ── */
+.topbar{ padding: 16px 28px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; background: var(--bg); position: sticky; top: 0; z-index: 10; }
+#td-app .topbar-left{ font-size: 13px; color: var(--text2); font-family: var(--mono); }
+#td-app .topbar-left strong{ color: var(--text); }
+#td-app .period-tabs{ display: flex; gap: 4px; background: var(--bg3); border-radius: 8px; padding: 4px; }
+#td-app .ptab{ font-size: 12px; font-family: var(--mono); padding: 5px 14px; border-radius: 5px; cursor: pointer; color: var(--text2); border: none; background: none; transition: all .15s; }
+#td-app .ptab.active{ background: var(--accent); color: #fff; }
+#td-app .add-btn{ background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: 8px 16px; font-size: 13px; font-family: var(--sans); font-weight: 600; cursor: pointer; transition: opacity .15s; display: flex; align-items: center; gap: 6px; }
+#td-app .add-btn:hover{ opacity: .85; }
+#td-app /* ── Dashboard content ── */
+.content{ padding: 24px 28px; }
+#td-app /* ── Metric cards ── */
+.metrics-grid{ display: grid; gap: 10px; margin-bottom: 20px; }
+#td-app .metric-card{ background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; }
+#td-app .metric-label{ font-size: 10px; font-family: var(--mono); color: var(--text3); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 8px; }
+#td-app .metric-value{ font-size: 26px; font-weight: 700; font-family: var(--mono); line-height: 1; }
+#td-app .metric-sub{ font-size: 11px; font-family: var(--mono); margin-top: 5px; }
+#td-app .val-up{ color: var(--up); }
+#td-app .val-down{ color: var(--down); }
+#td-app .val-neutral{ color: var(--text2); }
+#td-app /* ── Section cards ── */
+.section-card{ background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 18px 20px; margin-bottom: 14px; }
+#td-app .section-title{ font-size: 10px; font-family: var(--mono); color: var(--text3); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 14px; }
+#td-app /* ── Segment table ── */
+.seg-table{ width: 100%; border-collapse: collapse; font-size: 12px; font-family: var(--mono); }
+#td-app .seg-table th{ font-size: 10px; color: var(--text3); text-align: right; padding: 0 8px 8px; font-weight: 400; border-bottom: 1px solid var(--border); }
+#td-app .seg-table th:first-child{ text-align: left; }
+#td-app .seg-table td{ padding: 9px 8px; border-bottom: 1px solid var(--border); text-align: right; vertical-align: middle; }
+#td-app .seg-table td:first-child{ text-align: left; }
+#td-app .seg-table tr:last-child td{ border-bottom: none; font-weight: 600; color: var(--text); }
+#td-app .seg-name{ display: flex; align-items: center; gap: 8px; font-weight: 500; color: var(--text); }
+#td-app .seg-dot{ width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+#td-app /* ── Weekly blocks ── */
+.weeks-grid{ display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 14px; }
+#td-app .week-card{ background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
+#td-app .week-header{ display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+#td-app .week-label{ font-size: 10px; font-family: var(--mono); color: var(--text3); text-transform: uppercase; letter-spacing:.06em; }
+#td-app .week-pnl{ font-size: 15px; font-weight: 700; font-family: var(--mono); }
+#td-app .week-roi{ font-size: 10px; font-family: var(--mono); margin-top: 2px; }
+#td-app .day-strip{ display: flex; gap: 3px; margin-bottom: 10px; }
+#td-app .day-pip{ flex: 1; height: 28px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 9px; font-family: var(--mono); font-weight: 500; }
+#td-app .pip-up{ background: rgba(0,212,170,0.15); color: var(--up); }
+#td-app .pip-down{ background: rgba(255,92,106,0.15); color: var(--down); }
+#td-app .pip-flat{ background: var(--bg4); color: var(--text3); }
+#td-app .week-segs{ display: flex; flex-direction: column; gap: 5px; }
+#td-app .week-seg-row{ display: flex; justify-content: space-between; align-items: center; font-size: 11px; font-family: var(--mono); }
+#td-app .week-seg-name{ display: flex; align-items: center; gap: 5px; color: var(--text2); }
+#td-app /* ── Daily view ── */
+.trade-table{ width: 100%; border-collapse: collapse; font-size: 12px; font-family: var(--mono); }
+#td-app .trade-table th{ font-size: 10px; color: var(--text3); text-align: right; padding: 0 8px 8px; font-weight: 400; border-bottom: 1px solid var(--border); }
+#td-app .trade-table th:first-child,#td-app .trade-table th:nth-child(2),#td-app .trade-table th:nth-child(3){ text-align: left; }
+#td-app .trade-table td{ padding: 8px 8px; border-bottom: 1px solid var(--border); text-align: right; vertical-align: middle; }
+#td-app .trade-table td:first-child,#td-app .trade-table td:nth-child(2),#td-app .trade-table td:nth-child(3){ text-align: left; }
+#td-app .trade-table tr:last-child td{ border-bottom: none; }
+#td-app .badge{ font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 4px; font-family: var(--mono); }
+#td-app .b-intraday{ background: rgba(62,207,255,0.12); color: var(--seg-intraday); }
+#td-app .b-fo{ background: rgba(124,106,247,0.12); color: var(--seg-fo); }
+#td-app .b-commodity{ background: rgba(245,166,35,0.12); color: var(--seg-commodity); }
+#td-app .b-us{ background: rgba(0,212,170,0.12); color: var(--seg-us); }
+#td-app .b-lt{ background: rgba(255,124,82,0.12); color: var(--seg-lt); }
+#td-app .b-st{ background: rgba(224,64,251,0.12); color: var(--seg-st); }
+#td-app .side-buy{ color: var(--up); font-weight: 600; }
+#td-app .side-sell{ color: var(--down); font-weight: 600; }
+#td-app .expiry-badge{ font-size: 10px; padding: 2px 7px; border-radius: 4px; font-family: var(--mono); }
+#td-app .exp-urgent{ background: rgba(255,92,106,0.15); color: var(--down); }
+#td-app .exp-soon{ background: rgba(245,166,35,0.12); color: var(--amber); }
+#td-app .exp-ok{ background: rgba(0,212,170,0.08); color: var(--up); }
+#td-app /* ── Chart ── */
+.chart-wrap{ position: relative; }
+#td-app /* ── Modal overlay ── */
+.modal-overlay{ position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 100; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity .2s; }
+#td-app .modal-overlay.open{ opacity: 1; pointer-events: all; }
+#td-app .modal{ background: var(--bg2); border: 1px solid var(--border2); border-radius: 16px; width: 680px; max-width: 95vw; max-height: 90vh; overflow-y: auto; }
+#td-app .modal-header{ padding: 20px 24px 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+#td-app .modal-title{ font-size: 16px; font-weight: 700; }
+#td-app .modal-close{ background: var(--bg3); border: none; color: var(--text2); width: 28px; height: 28px; border-radius: 6px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; transition: all .15s; }
+#td-app .modal-close:hover{ color: var(--text); background: var(--bg4); }
+#td-app .modal-body{ padding: 20px 24px 24px; }
+#td-app .form-grid{ display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+#td-app .form-grid.triple{ grid-template-columns: 1fr 1fr 1fr; }
+#td-app .field{ display: flex; flex-direction: column; gap: 6px; }
+#td-app .field.full{ grid-column: span 2; }
+#td-app .field label{ font-size: 11px; font-family: var(--mono); color: var(--text3); text-transform: uppercase; letter-spacing: .06em; }
+#td-app .field input,#td-app .field select{ background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 9px 12px; color: var(--text); font-family: var(--mono); font-size: 13px; outline: none; transition: border .15s; width: 100%; }
+#td-app .field input:focus,#td-app .field select:focus{ border-color: var(--accent); }
+#td-app .field select option{ background: var(--bg3); }
+#td-app .calc-row{ background: var(--bg3); border-radius: 8px; padding: 12px 14px; margin-top: 4px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+#td-app .calc-item label{ font-size: 10px; color: var(--text3); font-family: var(--mono); text-transform: uppercase; letter-spacing: .06em; display: block; margin-bottom: 4px; }
+#td-app .calc-item span{ font-size: 15px; font-weight: 700; font-family: var(--mono); }
+#td-app .form-actions{ display: flex; gap: 10px; margin-top: 20px; justify-content: flex-end; }
+#td-app .btn-cancel{ background: var(--bg3); border: 1px solid var(--border); color: var(--text2); border-radius: 8px; padding: 9px 18px; font-size: 13px; font-family: var(--sans); cursor: pointer; transition: all .15s; }
+#td-app .btn-cancel:hover{ color: var(--text); }
+#td-app .btn-submit{ background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: 9px 22px; font-size: 13px; font-family: var(--sans); font-weight: 600; cursor: pointer; transition: opacity .15s; }
+#td-app .btn-submit:hover{ opacity: .85; }
+#td-app /* ── Empty state ── */
+.empty-state{ text-align: center; padding: 40px 20px; color: var(--text3); font-family: var(--mono); font-size: 13px; }
+#td-app .empty-state .big{ font-size: 32px; margin-bottom: 10px; }
+#td-app /* ── Bar chart ── */
+.bar-chart{ display: flex; align-items: flex-end; gap: 4px; height: 80px; padding: 4px 0; }
+#td-app .bar-wrap{ flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; }
+#td-app .bar-col{ width: 100%; border-radius: 3px 3px 0 0; min-height: 2px; transition: height .3s; }
+#td-app .bar-lbl{ font-size: 9px; font-family: var(--mono); color: var(--text3); }
+#td-app /* ── Capital cards ── */
+.cap-overview{ display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 10px; margin-bottom: 14px; }
+#td-app .cap-card{ background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; }
+#td-app .cap-card.highlight{ border-color: rgba(124,106,247,0.35); }
+#td-app .cap-label{ font-size: 10px; font-family: var(--mono); color: var(--text3); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 6px; }
+#td-app .cap-value{ font-size: 22px; font-weight: 700; font-family: var(--mono); line-height: 1; color: var(--text); }
+#td-app .cap-sub{ font-size: 11px; font-family: var(--mono); margin-top: 4px; color: var(--text2); }
+#td-app .cap-split{ display: flex; gap: 16px; margin-top: 8px; }
+#td-app .cap-split-item{ flex: 1; }
+#td-app .cap-split-item .lbl{ font-size: 10px; font-family: var(--mono); color: var(--text3); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 3px; }
+#td-app .cap-split-item .val{ font-size: 14px; font-weight: 700; font-family: var(--mono); }
+#td-app /* ── Seg capital grid ── */
+.seg-cap-grid{ display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 14px; }
+#td-app .seg-cap-card{ background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 16px 18px; position: relative; overflow: hidden; }
+#td-app .seg-cap-card::before{ content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 12px 12px 0 0; }
+#td-app .seg-cap-bar{ height: 4px; background: var(--border); border-radius: 2px; margin: 10px 0 6px; overflow: hidden; }
+#td-app .seg-cap-bar-fill{ height: 100%; border-radius: 2px; transition: width .4s ease; }
+#td-app .seg-cap-row{ display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+#td-app .seg-cap-name{ font-size: 13px; font-weight: 600; font-family: var(--mono); }
+#td-app .seg-cap-total{ font-size: 13px; font-weight: 700; font-family: var(--mono); color: var(--text2); }
+#td-app .roi-pair{ display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px; }
+#td-app .roi-box{ background: var(--bg3); border-radius: 8px; padding: 8px 10px; }
+#td-app .roi-box .lbl{ font-size: 9px; font-family: var(--mono); color: var(--text3); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 3px; }
+#td-app .roi-box .val{ font-size: 15px; font-weight: 700; font-family: var(--mono); }
+#td-app /* ── Capital modal ── */
+.cap-modal-seg{ background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; margin-bottom: 10px; }
+#td-app .cap-modal-seg-header{ display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+#td-app .cap-modal-seg-name{ display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; font-family: var(--mono); }
+#td-app .cap-input-row{ display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+#td-app /* ── Scrollbar ── */
+::-webkit-scrollbar{ width: 5px; height: 5px; }
+#td-app ::-webkit-scrollbar-track{ background: transparent; }
+#td-app ::-webkit-scrollbar-thumb{ background: var(--border2); border-radius: 10px; }
+
+</style>
+</head>
+<body>
+<div class="fo-shell">
+  <aside class="fo-sidebar">
+    <div class="fo-logo">
+      <div class="fo-logo-title">Finance<span>OS</span></div>
+      <div class="fo-logo-sub">Personal Finance Hub</div>
+    </div>
+    <div class="fo-nav-section">
+      <div class="fo-nav-label">Overview</div>
+      <div class="fo-nav-item active" style="--accent:var(--up)" onclick="showPage('home')">
+        <div class="fo-nav-dot"></div>Home<span class="fo-nav-val" id="nav-nw">—</span>
+      </div>
+    </div>
+    <div class="fo-nav-section">
+      <div class="fo-nav-label">Trading</div>
+      <div class="fo-nav-item" style="--accent:var(--c-trade)" onclick="showPage('trade')">
+        <div class="fo-nav-dot" style="background:var(--c-trade)"></div>TradeDesk<span class="fo-nav-val" id="nav-trade">—</span>
+      </div>
+    </div>
+    <div class="fo-nav-section">
+      <div class="fo-nav-label">Cash Flow</div>
+      <div class="fo-nav-item" style="--accent:var(--c-income)" onclick="showPage('income')">
+        <div class="fo-nav-dot" style="background:var(--c-income)"></div>Income<span class="fo-nav-val" id="nav-income">—</span>
+      </div>
+      <div class="fo-nav-item" style="--accent:var(--c-expense)" onclick="showPage('expenses')">
+        <div class="fo-nav-dot" style="background:var(--c-expense)"></div>Expenses<span class="fo-nav-val" id="nav-expenses">—</span>
+      </div>
+    </div>
+    <div class="fo-nav-section">
+      <div class="fo-nav-label">Investments</div>
+      <div class="fo-nav-item" style="--accent:var(--c-mf)" onclick="showPage('mf')">
+        <div class="fo-nav-dot" style="background:var(--c-mf)"></div>MF / SIP / FD<span class="fo-nav-val" id="nav-mf">—</span>
+      </div>
+      <div class="fo-nav-item" style="--accent:var(--c-ppf)" onclick="showPage('ppf')">
+        <div class="fo-nav-dot" style="background:var(--c-ppf)"></div>PPF<span class="fo-nav-val" id="nav-ppf">—</span>
+      </div>
+      <div class="fo-nav-item" style="--accent:var(--c-gold)" onclick="showPage('gold')">
+        <div class="fo-nav-dot" style="background:var(--c-gold)"></div>Gold<span class="fo-nav-val" id="nav-gold">—</span>
+      </div>
+    </div>
+    <div class="fo-nav-section">
+      <div class="fo-nav-label">Liabilities</div>
+      <div class="fo-nav-item" style="--accent:var(--c-loans)" onclick="showPage('loans')">
+        <div class="fo-nav-dot" style="background:var(--c-loans)"></div>Loans & Credit<span class="fo-nav-val" id="nav-loans">—</span>
+      </div>
+    </div>
+    <div class="fo-nav-section">
+      <div class="fo-nav-label">Planning</div>
+      <div class="fo-nav-item" style="--accent:var(--c-goals)" onclick="showPage('goals')">
+        <div class="fo-nav-dot" style="background:var(--c-goals)"></div>Goals<span class="fo-nav-val" id="nav-goals">—</span>
+      </div>
+      <div class="fo-nav-item" style="--accent:var(--c-income)" onclick="showPage('networth')">
+        <div class="fo-nav-dot" style="background:var(--c-income)"></div>Net Worth
+      </div>
+    </div>
+    <div class="fo-nav-section">
+      <div class="fo-nav-label">Protection</div>
+      <div class="fo-nav-item" style="--accent:var(--c-insurance)" onclick="showPage('insurance')">
+        <div class="fo-nav-dot" style="background:var(--c-insurance)"></div>Insurance<span class="fo-nav-val" id="nav-insurance">—</span>
+      </div>
+    </div>
+    <div class="fo-sidebar-footer" id="fo-footer">0 records · Local storage</div>
+  </aside>
+
+  <main class="fo-main">
+    <!-- HOME -->
+    <div class="fo-page active" id="page-home">
+      <div class="fo-topbar">
+        <div><div class="fo-page-title">Home Dashboard</div><div class="fo-page-sub">Your complete financial picture</div></div>
+      </div>
+      <div class="fo-content">
+        <div class="nw-hero">
+          <div class="nw-hero-label">Total Net Worth</div>
+          <div class="nw-hero-val" id="home-nw">₹0</div>
+          <div class="nw-hero-sub" id="home-nw-sub">Assets − Liabilities across all modules</div>
+          <div class="nw-breakdown">
+            <div class="nw-item"><div class="nw-item-label">Trading P&L</div><div class="nw-item-val" id="home-trade">—</div></div>
+            <div class="nw-item"><div class="nw-item-label">MF / SIP / FD</div><div class="nw-item-val" id="home-mf">—</div></div>
+            <div class="nw-item"><div class="nw-item-label">PPF</div><div class="nw-item-val" id="home-ppf">—</div></div>
+            <div class="nw-item"><div class="nw-item-label">Gold</div><div class="nw-item-val" id="home-gold">—</div></div>
+            <div class="nw-item"><div class="nw-item-label">Loans</div><div class="nw-item-val val-down" id="home-loans">—</div></div>
+            <div class="nw-item"><div class="nw-item-label">Savings</div><div class="nw-item-val" id="home-savings">—</div></div>
+            <div class="nw-item"><div class="nw-item-label">Ins. Premium</div><div class="nw-item-val" id="home-insurance-premium" style="color:var(--c-insurance)">—</div></div>
+          </div>
+        </div>
+        <div class="stat-grid">
+          <div class="fo-card"><div class="fo-card-title">This Month Income</div><div class="fo-card-val val-up" id="home-mtd-income">₹0</div><div class="fo-card-sub" id="home-mtd-income-sub">0 entries</div></div>
+          <div class="fo-card"><div class="fo-card-title">This Month Expenses</div><div class="fo-card-val val-down" id="home-mtd-expense">₹0</div><div class="fo-card-sub" id="home-mtd-expense-sub">0 entries</div></div>
+          <div class="fo-card"><div class="fo-card-title">Monthly Savings</div><div class="fo-card-val" id="home-mtd-savings">₹0</div><div class="fo-card-sub">Income − Expenses</div></div>
+          <div class="fo-card"><div class="fo-card-title">MTD Trading P&L</div><div class="fo-card-val" id="home-mtd-trade">—</div><div class="fo-card-sub" id="home-mtd-trade-sub">0 trades</div></div>
+        </div>
+        <div class="stat-grid three">
+          <div class="fo-card"><div class="fo-card-title">Total Invested</div><div class="fo-card-val" id="home-invested">₹0</div><div class="fo-card-sub">MF + PPF + Gold</div></div>
+          <div class="fo-card"><div class="fo-card-title">Total Liabilities</div><div class="fo-card-val val-down" id="home-liabilities">₹0</div><div class="fo-card-sub">Outstanding loans</div></div>
+          <div class="fo-card"><div class="fo-card-title">Active Goals</div><div class="fo-card-val" id="home-goals-count">0</div><div class="fo-card-sub" id="home-goals-sub">0 achieved</div></div>
+        </div>
+        <div class="stat-grid">
+          <div class="fo-card"><div class="fo-card-title">Total Coverage</div><div class="fo-card-val" id="home-ins-coverage" style="color:var(--c-insurance)">—</div><div class="fo-card-sub" id="home-ins-count">0 policies</div></div>
+          <div class="fo-card"><div class="fo-card-title">Annual Premium</div><div class="fo-card-val val-down" id="home-ins-premium">—</div><div class="fo-card-sub">Total yearly outflow</div></div>
+          <div class="fo-card"><div class="fo-card-title">Health Coverage</div><div class="fo-card-val" id="home-ins-health" style="color:#00b4d8">—</div><div class="fo-card-sub">Self + Family</div></div>
+          <div class="fo-card"><div class="fo-card-title">Life Coverage</div><div class="fo-card-val" id="home-ins-life" style="color:#7c6af7">—</div><div class="fo-card-sub">Term + Whole life</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- INCOME -->
+    <div class="fo-page" id="page-income" style="--accent:var(--c-income)">
+      <div class="fo-topbar">
+        <div><div class="fo-page-title">Income</div><div class="fo-page-sub" id="income-sub">0 entries</div></div>
+        <div class="fo-topbar-actions">
+          <select id="income-month-filter" style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:7px 12px;color:var(--text);font-family:var(--mono);font-size:12px" onchange="renderIncome()"></select>
+          <button class="fo-btn primary" onclick="openIncomeModal()">+ Add Income</button>
+        </div>
+      </div>
+      <div class="fo-content">
+        <div class="stat-grid three">
+          <div class="fo-card"><div class="fo-card-title">This Month</div><div class="fo-card-val val-up" id="income-mtd">₹0</div><div class="fo-card-sub" id="income-mtd-sub">0 entries</div></div>
+          <div class="fo-card"><div class="fo-card-title">Largest Source</div><div class="fo-card-val" id="income-top-src">—</div><div class="fo-card-sub" id="income-top-src-val">—</div></div>
+          <div class="fo-card"><div class="fo-card-title">All Time Total</div><div class="fo-card-val val-up" id="income-alltime">₹0</div><div class="fo-card-sub" id="income-alltime-sub">0 entries</div></div>
+        </div>
+        <div class="fo-card">
+          <div style="overflow-x:auto"><table class="fo-table">
+            <thead><tr><th>Date</th><th>Source</th><th>Category</th><th>Amount</th><th>Notes</th><th></th></tr></thead>
+            <tbody id="income-tbody"></tbody>
+          </table></div>
+          <div id="income-empty" class="fo-empty"><div class="fo-empty-icon">💰</div><p>No income logged yet.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- EXPENSES -->
+    <div class="fo-page" id="page-expenses" style="--accent:var(--c-expense)">
+      <div class="fo-topbar">
+        <div><div class="fo-page-title">Expenses</div><div class="fo-page-sub" id="expense-sub">0 entries</div></div>
+        <div class="fo-topbar-actions">
+          <select id="expense-month-filter" style="background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:7px 12px;color:var(--text);font-family:var(--mono);font-size:12px" onchange="renderExpenses()"></select>
+          <button class="fo-btn primary" onclick="openExpenseModal()">+ Add Expense</button>
+        </div>
+      </div>
+      <div class="fo-content">
+        <div class="stat-grid three">
+          <div class="fo-card"><div class="fo-card-title">This Month</div><div class="fo-card-val val-down" id="expense-mtd">₹0</div><div class="fo-card-sub" id="expense-mtd-sub">0 entries</div></div>
+          <div class="fo-card"><div class="fo-card-title">Top Category</div><div class="fo-card-val" id="expense-top-cat">—</div><div class="fo-card-sub" id="expense-top-cat-val">—</div></div>
+          <div class="fo-card"><div class="fo-card-title">All Time Total</div><div class="fo-card-val val-down" id="expense-alltime">₹0</div><div class="fo-card-sub" id="expense-alltime-sub">0 entries</div></div>
+        </div>
+        <div class="fo-card">
+          <div style="overflow-x:auto"><table class="fo-table">
+            <thead><tr><th>Date</th><th>Merchant</th><th>Category</th><th>Amount</th><th>Notes</th><th></th></tr></thead>
+            <tbody id="expense-tbody"></tbody>
+          </table></div>
+          <div id="expense-empty" class="fo-empty"><div class="fo-empty-icon">🧾</div><p>No expenses logged yet.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MF / SIP / FD -->
+    <div class="fo-page" id="page-mf" style="--accent:var(--c-mf)">
+      <div class="fo-topbar">
+        <div><div class="fo-page-title">MF / SIP / FD</div><div class="fo-page-sub" id="mf-sub">0 holdings</div></div>
+        <div class="fo-topbar-actions"><button class="fo-btn primary" onclick="openMfModal()">+ Add Investment</button></div>
+      </div>
+      <div class="fo-content">
+        <div class="stat-grid">
+          <div class="fo-card"><div class="fo-card-title">Total Invested</div><div class="fo-card-val" id="mf-invested">₹0</div></div>
+          <div class="fo-card"><div class="fo-card-title">Current Value</div><div class="fo-card-val" id="mf-current">₹0</div></div>
+          <div class="fo-card"><div class="fo-card-title">Gain / Loss</div><div class="fo-card-val" id="mf-gain">₹0</div></div>
+          <div class="fo-card"><div class="fo-card-title">Returns %</div><div class="fo-card-val" id="mf-xirr">—</div></div>
+        </div>
+        <div class="fo-card">
+          <div style="overflow-x:auto"><table class="fo-table">
+            <thead><tr><th>Name</th><th>Type</th><th>Invested</th><th>Current Value</th><th>Gain/Loss</th><th>Returns %</th><th>SIP</th><th>Since</th><th></th></tr></thead>
+            <tbody id="mf-tbody"></tbody>
+          </table></div>
+          <div id="mf-empty" class="fo-empty"><div class="fo-empty-icon">◎</div><p>No investments added yet.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PPF -->
+    <div class="fo-page" id="page-ppf" style="--accent:var(--c-ppf)">
+      <div class="fo-topbar">
+        <div><div class="fo-page-title">PPF</div><div class="fo-page-sub" id="ppf-sub">0 accounts</div></div>
+        <div class="fo-topbar-actions"><button class="fo-btn primary" onclick="openPpfModal()">+ Add Account</button></div>
+      </div>
+      <div class="fo-content">
+        <div class="stat-grid three">
+          <div class="fo-card"><div class="fo-card-title">Total Balance</div><div class="fo-card-val" id="ppf-balance">₹0</div></div>
+          <div class="fo-card"><div class="fo-card-title">Total Invested</div><div class="fo-card-val" id="ppf-invested">₹0</div></div>
+          <div class="fo-card"><div class="fo-card-title">Interest Earned</div><div class="fo-card-val val-up" id="ppf-interest">₹0</div></div>
+        </div>
+        <div class="fo-card">
+          <div style="overflow-x:auto"><table class="fo-table">
+            <thead><tr><th>Account</th><th>Bank</th><th>Opened</th><th>Yearly</th><th>Invested</th><th>Balance</th><th>Maturity</th><th>Rate</th><th></th></tr></thead>
+            <tbody id="ppf-tbody"></tbody>
+          </table></div>
+          <div id="ppf-empty" class="fo-empty"><div class="fo-empty-icon">🛡</div><p>No PPF accounts added yet.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GOLD -->
+    <div class="fo-page" id="page-gold" style="--accent:var(--c-gold)">
+      <div class="fo-topbar">
+        <div><div class="fo-page-title">Gold</div><div class="fo-page-sub" id="gold-sub">Physical · SGB · ETF</div></div>
+        <div class="fo-topbar-actions"><button class="fo-btn primary" onclick="openGoldModal()">+ Add Gold</button></div>
+      </div>
+      <div class="fo-content">
+        <div class="stat-grid three">
+          <div class="fo-card"><div class="fo-card-title">Total Invested</div><div class="fo-card-val" id="gold-invested">₹0</div></div>
+          <div class="fo-card"><div class="fo-card-title">Current Value</div><div class="fo-card-val" id="gold-current">₹0</div></div>
+          <div class="fo-card"><div class="fo-card-title">Gain / Loss</div><div class="fo-card-val" id="gold-gain">₹0</div></div>
+        </div>
+        <div class="fo-card">
+          <div style="overflow-x:auto"><table class="fo-table">
+            <thead><tr><th>Name</th><th>Type</th><th>Qty/g</th><th>Buy ₹/g</th><th>CMP ₹/g</th><th>Invested</th><th>Current</th><th>Gain/Loss</th><th></th></tr></thead>
+            <tbody id="gold-tbody"></tbody>
+          </table></div>
+          <div id="gold-empty" class="fo-empty"><div class="fo-empty-icon">◈</div><p>No gold holdings yet.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LOANS -->
+    <div class="fo-page" id="page-loans" style="--accent:var(--c-loans)">
+      <div class="fo-topbar">
+        <div><div class="fo-page-title">Loans & Credit</div><div class="fo-page-sub" id="loans-sub">0 active</div></div>
+        <div class="fo-topbar-actions"><button class="fo-btn primary" onclick="openLoanModal()">+ Add Loan</button></div>
+      </div>
+      <div class="fo-content">
+        <div class="stat-grid three">
+          <div class="fo-card"><div class="fo-card-title">Total Outstanding</div><div class="fo-card-val val-down" id="loans-outstanding">₹0</div></div>
+          <div class="fo-card"><div class="fo-card-title">Monthly EMI</div><div class="fo-card-val val-down" id="loans-emi">₹0</div></div>
+          <div class="fo-card"><div class="fo-card-title">Active Loans</div><div class="fo-card-val" id="loans-count">0</div></div>
+        </div>
+        <div class="fo-card">
+          <div style="overflow-x:auto"><table class="fo-table">
+            <thead><tr><th>Name</th><th>Lender</th><th>Type</th><th>Principal</th><th>Outstanding</th><th>EMI</th><th>Rate %</th><th>Start</th><th></th></tr></thead>
+            <tbody id="loans-tbody"></tbody>
+          </table></div>
+          <div id="loans-empty" class="fo-empty"><div class="fo-empty-icon">⚠</div><p>No loans added yet.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- GOALS -->
+    <div class="fo-page" id="page-goals" style="--accent:var(--c-goals)">
+      <div class="fo-topbar">
+        <div><div class="fo-page-title">Goals</div><div class="fo-page-sub" id="goals-sub">0 goals</div></div>
+        <div class="fo-topbar-actions"><button class="fo-btn primary" onclick="openGoalModal()">+ Add Goal</button></div>
+      </div>
+      <div class="fo-content">
+        <div class="stat-grid three">
+          <div class="fo-card"><div class="fo-card-title">Active Goals</div><div class="fo-card-val" id="goals-active">0</div></div>
+          <div class="fo-card"><div class="fo-card-title">Achieved</div><div class="fo-card-val val-up" id="goals-achieved">0</div></div>
+          <div class="fo-card"><div class="fo-card-title">Total Target</div><div class="fo-card-val" id="goals-target-total">₹0</div></div>
+        </div>
+        <div id="goals-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px"></div>
+        <div id="goals-empty" class="fo-empty"><div class="fo-empty-icon">⊕</div><p>No goals yet. Click + Add Goal.</p></div>
+      </div>
+    </div>
+
+    <!-- INSURANCE -->
+    <div class="fo-page" id="page-insurance" style="--accent:var(--c-insurance)">
+      <div class="fo-topbar">
+        <div><div class="fo-page-title">Insurance</div><div class="fo-page-sub" id="insurance-sub">0 policies</div></div>
+        <div class="fo-topbar-actions"><button class="fo-btn primary" onclick="openInsuranceModal()">+ Add Policy</button></div>
+      </div>
+      <div class="fo-content">
+        <div class="stat-grid">
+          <div class="fo-card"><div class="fo-card-title">Total Coverage</div><div class="fo-card-val" id="ins-total-coverage" style="color:var(--c-insurance)">₹0</div><div class="fo-card-sub" id="ins-policy-count">0 active policies</div></div>
+          <div class="fo-card"><div class="fo-card-title">Annual Premium</div><div class="fo-card-val val-down" id="ins-annual-premium">₹0</div><div class="fo-card-sub">Total yearly outflow</div></div>
+          <div class="fo-card"><div class="fo-card-title">Next Renewal</div><div class="fo-card-val" id="ins-next-renewal" style="color:var(--amber)">—</div><div class="fo-card-sub" id="ins-next-renewal-name">—</div></div>
+          <div class="fo-card"><div class="fo-card-title">Monthly Cost</div><div class="fo-card-val val-down" id="ins-monthly-cost">₹0</div><div class="fo-card-sub">Avg per month</div></div>
+        </div>
+        <div class="fo-grid2" style="gap:14px;margin-bottom:16px">
+          <div class="fo-card"><div class="fo-card-title" style="margin-bottom:14px">Coverage by Type</div><div id="ins-coverage-breakdown"></div></div>
+          <div class="fo-card"><div class="fo-card-title" style="margin-bottom:14px">Annual Premium by Type</div><div id="ins-premium-breakdown"></div></div>
+        </div>
+        <div class="fo-card">
+          <div style="overflow-x:auto"><table class="fo-table">
+            <thead><tr><th>Policy Name</th><th>Insurer</th><th>Type</th><th>Coverage</th><th>Premium</th><th>Frequency</th><th>Renewal</th><th>Status</th><th>Nominee</th><th></th></tr></thead>
+            <tbody id="insurance-tbody"></tbody>
+          </table></div>
+          <div id="insurance-empty" class="fo-empty"><div class="fo-empty-icon">🛡️</div><p>No insurance policies added yet. Click + Add Policy.</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NET WORTH -->
+    <div class="fo-page" id="page-networth" style="--accent:var(--c-income)">
+      <div class="fo-topbar">
+        <div><div class="fo-page-title">Net Worth</div><div class="fo-page-sub">Full asset & liability breakdown</div></div>
+      </div>
+      <div class="fo-content">
+        <div class="nw-hero">
+          <div class="nw-hero-label">Total Net Worth</div>
+          <div class="nw-hero-val" id="nw-total">₹0</div>
+          <div class="nw-hero-sub" id="nw-sub">Assets − Liabilities</div>
+        </div>
+        <div class="fo-grid2" style="gap:14px">
+          <div>
+            <div class="fo-section-title" style="margin-bottom:12px;color:var(--up)">ASSETS</div>
+            <div class="fo-card" id="nw-assets-card"></div>
+          </div>
+          <div>
+            <div class="fo-section-title" style="margin-bottom:12px;color:var(--down)">LIABILITIES</div>
+            <div class="fo-card" id="nw-liabilities-card"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TRADEDESK EMBED -->
+    <div id="td-app">
+
+
+
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-mark">Trade<span>Desk</span></div>
+      <div style="font-size:11px;color:var(--text3);font-family:var(--mono);margin-top:4px;">unified p&l tracker</div>
+    </div>
+    <nav>
+      <div class="nav-item active" onclick="tdShowView('dashboard')">
+        <span class="nav-dot" style="background:var(--accent)"></span> Dashboard
+      </div>
+      <div class="nav-item" onclick="tdShowView('trades')">
+        <span class="nav-dot" style="background:var(--text3)"></span> Trade Log
+      </div>
+      <div class="nav-item" onclick="tdShowView('positions')">
+        <span class="nav-dot" style="background:var(--text3)"></span> Open Positions
+      </div>
+      <div class="nav-item" onclick="tdShowView('capital')">
+        <span class="nav-dot" style="background:var(--text3)"></span> Capital Manager
+      </div>
+    </nav>
+    <div style="margin: 20px 0 8px; padding: 0 20px;">
+      <div style="font-size:10px;font-family:var(--mono);color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;">Segments</div>
+      <div style="display:flex;flex-direction:column;gap:6px;" id="seg-legend"></div>
+    </div>
+    <div class="sidebar-footer">
+      <div id="trade-count-display">0 trades logged</div>
+      <div style="margin-top:4px;" id="capital-display">₹0 deployed</div>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <strong id="period-label">March 2026</strong> &nbsp;·&nbsp; <span id="period-sublabel">Loading...</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div class="period-tabs">
+          <button class="ptab active" onclick="tdSetPeriod('monthly',this)">Monthly</button>
+          <button class="ptab" onclick="tdSetPeriod('weekly',this)">Weekly</button>
+          <button class="ptab" onclick="tdSetPeriod('daily',this)">Daily</button>
+        </div>
+        <button class="add-btn" style="background:var(--bg3);border:1px solid var(--border2);color:var(--text2);" onclick="tdOpenCapModal()">⚙ Capital</button>
+        <button class="add-btn" onclick="tdOpenModal()">+ Add Trade</button>
+        <button class="add-btn" onclick="tdOpenInitCapModal()" style="background:var(--bg3);border:1px solid var(--border2);color:var(--text2);margin-left:6px;">⚙ Initial Capital</button>
+      </div>
+    </div>
+
+    <div class="content" id="main-content"></div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">Add Trade</div>
+      <button class="modal-close" onclick="tdCloseModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-grid" style="margin-bottom:14px;">
+        <div class="field">
+          <label>Segment</label>
+          <select id="f-segment" onchange="tdUpdateInstrumentHints()">
+            <option value="Intraday">Intraday Equity</option>
+            <option value="F&O">F&O (Futures & Options)</option>
+            <option value="Commodity">Commodity (MCX)</option>
+            <option value="Short Term">Short Term Equity</option>
+            <option value="US Stocks">US Stocks</option>
+            <option value="LT Invest">LT Investment</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Instrument / Symbol</label>
+          <input id="f-instrument" type="text" placeholder="e.g. NIFTY 24000 CE">
+        </div>
+        <div class="field">
+          <label>Trade Date</label>
+          <input id="f-date" type="date">
+        </div>
+        <div class="field">
+          <label>Trade Type</label>
+          <select id="f-type">
+            <option value="Buy">Buy / Long</option>
+            <option value="Sell">Sell / Short</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Strategy</label>
+          <select id="f-strategy">
+            <option value="Momentum">Momentum</option>
+            <option value="Breakout">Breakout</option>
+            <option value="Reversal">Reversal</option>
+            <option value="Scalp">Scalp</option>
+            <option value="Swing">Swing</option>
+            <option value="Positional">Positional</option>
+            <option value="Hedging">Hedging</option>
+            <option value="BTST">BTST</option>
+            <option value="Options Sell">Options Sell</option>
+            <option value="Straddle">Straddle</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Exit Date (if closed)</label>
+          <input id="f-exit-date" type="date" oninput="tdCalcFields()">
+        </div>
+      </div>
+      <div class="form-grid triple" style="margin-bottom:14px;">
+        <div class="field">
+          <label id="qty-label">Qty / Lots</label>
+          <input id="f-qty" type="number" min="1" value="1" oninput="tdCalcFields()">
+        </div>
+        <div class="field">
+          <label>Lot Size (1 if equity)</label>
+          <input id="f-lotsize" type="number" value="1" oninput="tdCalcFields()">
+        </div>
+        <div class="field">
+          <label>Buy Price (₹/$)</label>
+          <input id="f-buy" type="number" step="0.01" placeholder="0.00" oninput="tdCalcFields()">
+        </div>
+        <div class="field">
+          <label>Sell Price — Realised (₹/$)</label>
+          <input id="f-sell" type="number" step="0.01" placeholder="Leave blank if open" oninput="tdCalcFields()">
+        </div>
+        <div class="field">
+          <label>CMP — Unrealised (₹/$)</label>
+          <input id="f-cmp" type="number" step="0.01" placeholder="Current market price" oninput="tdCalcFields()">
+        </div>
+        <div class="field">
+          <label>Brokerage / Charges</label>
+          <input id="f-charges" type="number" step="0.01" value="0" oninput="tdCalcFields()">
+        </div>
+        <div class="field" id="leverage-field" style="display:none;">
+          <label>Leverage <span style="color:var(--text3);font-size:10px;">(e.g. 5 = 5x)</span></label>
+          <input id="f-leverage" type="number" min="1" value="5" step="0.5" oninput="tdCalcFields()" placeholder="1 = no leverage">
+        </div>
+        <div class="field">
+          <label>Currency</label>
+          <select id="f-currency" onchange="tdCalcFields()">
+            <option value="INR">INR ₹</option>
+            <option value="USD">USD $</option>
+          </select>
+        </div>
+      </div>
+      <!-- Auto-calculated fields -->
+      <div style="margin-bottom:6px;font-size:10px;font-family:var(--mono);color:var(--text3);text-transform:uppercase;letter-spacing:.06em;">Auto-calculated</div>
+      <div class="calc-row">
+        <div class="calc-item">
+          <label>P&L (net)</label>
+          <span id="calc-pnl" class="val-neutral">—</span>
+        </div>
+        <div class="calc-item">
+          <label>ROI %</label>
+          <span id="calc-roi" class="val-neutral">—</span>
+        </div>
+        <div class="calc-item">
+          <label>Holding Days</label>
+          <span id="calc-days" class="val-neutral">—</span>
+        </div>
+      </div>
+      <div class="calc-row" style="margin-top:8px;">
+        <div class="calc-item">
+          <label>CAGR %</label>
+          <span id="calc-cagr" class="val-neutral">—</span>
+        </div>
+        <div class="calc-item">
+          <label>Notional Value</label>
+          <span id="calc-capital" class="val-neutral">—</span>
+        </div>
+        <div class="calc-item">
+          <label>Gross P&L</label>
+          <span id="calc-gross" class="val-neutral">—</span>
+        </div>
+      </div>
+      <div class="calc-row" id="leverage-calc-row" style="margin-top:8px;display:none;">
+        <div class="calc-item">
+          <label>Margin Used</label>
+          <span id="calc-margin" style="color:var(--amber);font-family:var(--mono);font-size:13px;">—</span>
+        </div>
+        <div class="calc-item">
+          <label>Leverage</label>
+          <span id="calc-lev" style="color:var(--text2);font-family:var(--mono);font-size:13px;">—</span>
+        </div>
+        <div class="calc-item">
+          <label>ROI on Margin</label>
+          <span id="calc-roi-margin" class="val-neutral">—</span>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn-cancel" onclick="tdCloseModal()">Cancel</button>
+        <button class="btn-submit" id="modal-submit-btn" onclick="tdSubmitTrade()">Log Trade</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CAPITAL MODAL -->
+<div class="modal-overlay" id="cap-modal">
+  <div class="modal" style="width:560px;">
+    <div class="modal-header">
+      <div class="modal-title">Set Segment Capital</div>
+      <button class="modal-close" onclick="tdCloseCapModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:11px;font-family:var(--mono);color:var(--text3);margin-bottom:16px;">Enter the total capital allocated to each segment. This is used to calculate available capital and overall ROI.</div>
+      <div id="cap-modal-fields"></div>
+      <div style="background:var(--bg3);border-radius:8px;padding:12px 14px;margin-top:4px;display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:11px;font-family:var(--mono);color:var(--text3);">Total allocated capital</span>
+        <span style="font-size:18px;font-weight:700;font-family:var(--mono);color:var(--text);" id="cap-modal-total">₹0</span>
+      </div>
+      <div class="form-actions">
+        <button class="btn-cancel" onclick="tdCloseCapModal()">Cancel</button>
+        <button class="btn-submit" onclick="tdSaveCapital()">Save Capital</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- INITIAL CAPITAL MODAL -->
+<div class="modal-overlay" id="init-cap-modal">
+  <div class="modal" style="max-width:400px;">
+    <div class="modal-header">
+      <div class="modal-title">Set Initial Capital</div>
+      <button class="modal-close" onclick="tdCloseInitCapModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="font-size:12px;font-family:var(--mono);color:var(--text3);margin-bottom:16px;">Your starting capital before any trades. Used to calculate cumulative returns.</div>
+      <div class="field" style="margin-bottom:16px;">
+        <label>Initial Capital (₹)</label>
+        <input id="f-init-cap" type="number" placeholder="e.g. 500000" style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:var(--mono);font-size:14px;width:100%;outline:none;">
+      </div>
+      <div class="form-actions">
+        <button class="btn-cancel" onclick="tdCloseInitCapModal()">Cancel</button>
+        <button class="btn-submit" onclick="tdSaveInitCap()">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- CONFIRM DELETE MODAL -->
+<div class="modal-overlay" id="confirm-modal">
+  <div class="modal" style="max-width:380px;">
+    <div class="modal-header">
+      <div class="modal-title" style="color:var(--down);">⚠ Confirm Delete</div>
+    </div>
+    <div class="modal-body">
+      <p id="confirm-msg" style="font-family:var(--mono);font-size:13px;color:var(--text2);margin-bottom:24px;line-height:1.5;"></p>
+      <div class="form-actions">
+        <button class="btn-cancel" id="confirm-no">Cancel</button>
+        <button id="confirm-yes" style="background:var(--down);color:#fff;border:none;border-radius:8px;padding:9px 22px;font-size:13px;font-family:var(--sans);font-weight:600;cursor:pointer;">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+    </div>
+  </main>
+</div>
+
+<!-- MODALS -->
+<div class="fo-modal-overlay" id="income-modal">
+  <div class="fo-modal" style="--accent:var(--c-income)">
+    <div class="fo-modal-header"><div class="fo-modal-title" id="income-modal-title">Add Income</div><button class="fo-modal-close" onclick="closeModal('income-modal')">×</button></div>
+    <div class="fo-modal-body">
+      <div class="fo-grid2">
+        <div class="fo-field"><label>Date</label><input type="date" id="inc-date"></div>
+        <div class="fo-field"><label>Amount (₹)</label><input type="number" id="inc-amount" placeholder="0" min="0" step="0.01"></div>
+      </div>
+      <div class="fo-grid2">
+        <div class="fo-field"><label>Source / Description</label><input type="text" id="inc-source" placeholder="e.g. Salary, Freelance"></div>
+        <div class="fo-field"><label>Category</label><select id="inc-category"><option>Salary</option><option>Freelance</option><option>Business</option><option>Rental</option><option>Dividends</option><option>Interest</option><option>Bonus</option><option>Gift</option><option>Other</option></select></div>
+      </div>
+      <div class="fo-field"><label>Notes (optional)</label><input type="text" id="inc-notes" placeholder="Additional details"></div>
+      <div class="fo-form-actions">
+        <button class="fo-btn-cancel" onclick="closeModal('income-modal')">Cancel</button>
+        <button class="fo-btn-submit" id="income-submit-btn" onclick="submitIncome()">Add Income</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="fo-modal-overlay" id="expense-modal">
+  <div class="fo-modal" style="--accent:var(--c-expense)">
+    <div class="fo-modal-header"><div class="fo-modal-title" id="expense-modal-title">Add Expense</div><button class="fo-modal-close" onclick="closeModal('expense-modal')">×</button></div>
+    <div class="fo-modal-body">
+      <div class="fo-grid2">
+        <div class="fo-field"><label>Date</label><input type="date" id="exp-date"></div>
+        <div class="fo-field"><label>Amount (₹)</label><input type="number" id="exp-amount" placeholder="0" min="0" step="0.01"></div>
+      </div>
+      <div class="fo-grid2">
+        <div class="fo-field"><label>Merchant / Description</label><input type="text" id="exp-merchant" placeholder="e.g. Zomato, Amazon"></div>
+        <div class="fo-field"><label>Category</label><select id="exp-category"><option>Food & Dining</option><option>Groceries</option><option>Transport</option><option>Utilities</option><option>Rent</option><option>Shopping</option><option>Health</option><option>Entertainment</option><option>Education</option><option>Travel</option><option>EMI</option><option>Insurance</option><option>Other</option></select></div>
+      </div>
+      <div class="fo-field"><label>Notes (optional)</label><input type="text" id="exp-notes" placeholder="Additional details"></div>
+      <div class="fo-form-actions">
+        <button class="fo-btn-cancel" onclick="closeModal('expense-modal')">Cancel</button>
+        <button class="fo-btn-submit" id="expense-submit-btn" onclick="submitExpense()">Add Expense</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="fo-modal-overlay" id="mf-modal">
+  <div class="fo-modal" style="--accent:var(--c-mf)">
+    <div class="fo-modal-header"><div class="fo-modal-title" id="mf-modal-title">Add Investment</div><button class="fo-modal-close" onclick="closeModal('mf-modal')">×</button></div>
+    <div class="fo-modal-body">
+      <div class="fo-grid2">
+        <div class="fo-field"><label>Fund / FD Name</label><input type="text" id="mf-name" placeholder="e.g. Parag Parikh Flexi Cap"></div>
+        <div class="fo-field"><label>Type</label><select id="mf-type"><option>Mutual Fund</option><option>SIP</option><option>FD</option><option>Index Fund</option><option>ELSS</option><option>Debt Fund</option></select></div>
+      </div>
+      <div class="fo-grid3">
+        <div class="fo-field"><label>Invested (₹)</label><input type="number" id="mf-invested-input" placeholder="0" oninput="calcMfReturn()"></div>
+        <div class="fo-field"><label>Current Value (₹)</label><input type="number" id="mf-current-input" placeholder="0" oninput="calcMfReturn()"></div>
+        <div class="fo-field"><label>SIP /month (₹)</label><input type="number" id="mf-sip" placeholder="0 if lumpsum"></div>
+      </div>
+      <div class="fo-grid2">
+        <div class="fo-field"><label>Start Date</label><input type="date" id="mf-start"></div>
+        <div class="fo-field"><label>Folio No. (optional)</label><input type="text" id="mf-folio" placeholder="Optional"></div>
+      </div>
+      <div class="calc-band">
+        <div class="calc-band-item"><label>Gain / Loss</label><span id="mf-calc-gain">—</span></div>
+        <div class="calc-band-item"><label>Returns %</label><span id="mf-calc-ret">—</span></div>
+      </div>
+      <div class="fo-form-actions">
+        <button class="fo-btn-cancel" onclick="closeModal('mf-modal')">Cancel</button>
+        <button class="fo-btn-submit" id="mf-submit-btn" onclick="submitMf()">Add Investment</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="fo-modal-overlay" id="ppf-modal">
+  <div class="fo-modal" style="--accent:var(--c-ppf)">
+    <div class="fo-modal-header"><div class="fo-modal-title" id="ppf-modal-title">Add PPF Account</div><button class="fo-modal-close" onclick="closeModal('ppf-modal')">×</button></div>
+    <div class="fo-modal-body">
+      <div class="fo-grid2">
+        <div class="fo-field"><label>Account Holder</label><input type="text" id="ppf-name" placeholder="e.g. Self / Spouse"></div>
+        <div class="fo-field"><label>Bank / Post Office</label><input type="text" id="ppf-bank" placeholder="e.g. SBI, Post Office"></div>
+      </div>
+      <div class="fo-grid3">
+        <div class="fo-field"><label>Opened</label><input type="date" id="ppf-opened"></div>
+        <div class="fo-field"><label>Yearly Contribution (₹)</label><input type="number" id="ppf-yearly" placeholder="Max ₹1,50,000" oninput="calcPpf()"></div>
+        <div class="fo-field"><label>Current Balance (₹)</label><input type="number" id="ppf-balance-input" placeholder="0" oninput="calcPpf()"></div>
+      </div>
+      <div class="fo-grid2">
+        <div class="fo-field"><label>Total Invested (₹)</label><input type="number" id="ppf-total-invested" placeholder="Cumulative deposits"></div>
+        <div class="fo-field"><label>Interest Rate (%)</label><input type="number" id="ppf-rate" value="7.1" step="0.1"></div>
+      </div>
+      <div class="calc-band">
+        <div class="calc-band-item"><label>Interest Earned</label><span id="ppf-calc-interest" class="val-up">—</span></div>
+        <div class="calc-band-item"><label>Maturity Date</label><span id="ppf-calc-maturity">—</span></div>
+      </div>
+      <div class="fo-form-actions">
+        <button class="fo-btn-cancel" onclick="closeModal('ppf-modal')">Cancel</button>
+        <button class="fo-btn-submit" id="ppf-submit-btn" onclick="submitPpf()">Add Account</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="fo-modal-overlay" id="gold-modal">
+  <div class="fo-modal" style="--accent:var(--c-gold)">
+    <div class="fo-modal-header"><div class="fo-modal-title" id="gold-modal-title">Add Gold</div><button class="fo-modal-close" onclick="closeModal('gold-modal')">×</button></div>
+    <div class="fo-modal-body">
+      <div class="fo-grid2">
+        <div class="fo-field"><label>Name / Description</label><input type="text" id="gold-name" placeholder="e.g. SGB 2023-24, 22K Chain"></div>
+        <div class="fo-field"><label>Type</label><select id="gold-type"><option>Physical</option><option>SGB</option><option>Gold ETF</option><option>Digital Gold</option></select></div>
+      </div>
+      <div class="fo-grid3">
+        <div class="fo-field"><label>Qty / Grams</label><input type="number" id="gold-qty" placeholder="0" step="0.01" oninput="calcGold()"></div>
+        <div class="fo-field"><label>Buy Price /g (₹)</label><input type="number" id="gold-buy" placeholder="0" oninput="calcGold()"></div>
+        <div class="fo-field"><label>CMP /g (₹)</label><input type="number" id="gold-cmp" placeholder="0" oninput="calcGold()"></div>
+      </div>
+      <div class="fo-field"><label>Purchase Date</label><input type="date" id="gold-date"></div>
+      <div class="calc-band">
+        <div class="calc-band-item"><label>Invested</label><span id="gold-calc-invested">—</span></div>
+        <div class="calc-band-item"><label>Current Value</label><span id="gold-calc-current">—</span></div>
+        <div class="calc-band-item"><label>Gain / Loss</label><span id="gold-calc-gain">—</span></div>
+      </div>
+      <div class="fo-form-actions">
+        <button class="fo-btn-cancel" onclick="closeModal('gold-modal')">Cancel</button>
+        <button class="fo-btn-submit" id="gold-submit-btn" onclick="submitGold()">Add Gold</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="fo-modal-overlay" id="loan-modal">
+  <div class="fo-modal" style="--accent:var(--c-loans)">
+    <div class="fo-modal-header"><div class="fo-modal-title" id="loan-modal-title">Add Loan</div><button class="fo-modal-close" onclick="closeModal('loan-modal')">×</button></div>
+    <div class="fo-modal-body">
+      <div class="fo-grid2">
+        <div class="fo-field"><label>Loan Name</label><input type="text" id="loan-name" placeholder="e.g. Home Loan, Car Loan"></div>
+        <div class="fo-field"><label>Lender</label><input type="text" id="loan-lender" placeholder="e.g. HDFC Bank"></div>
+      </div>
+      <div class="fo-grid2">
+        <div class="fo-field"><label>Type</label><select id="loan-type"><option>Home Loan</option><option>Car Loan</option><option>Personal Loan</option><option>Education Loan</option><option>Credit Card</option><option>Business Loan</option><option>Other</option></select></div>
+        <div class="fo-field"><label>Start Date</label><input type="date" id="loan-start"></div>
+      </div>
+      <div class="fo-grid3">
+        <div class="fo-field"><label>Principal (₹)</label><input type="number" id="loan-principal" placeholder="0" oninput="calcLoan()"></div>
+        <div class="fo-field"><label>Outstanding (₹)</label><input type="number" id="loan-outstanding" placeholder="0" oninput="calcLoan()"></div>
+        <div class="fo-field"><label>Interest Rate (%)</label><input type="number" id="loan-rate" placeholder="8.5" step="0.1" oninput="calcLoan()"></div>
+      </div>
+      <div class="fo-grid2">
+        <div class="fo-field"><label>Tenure (months)</label><input type="number" id="loan-tenure" placeholder="240" oninput="calcLoan()"></div>
+        <div class="fo-field"><label>EMI (₹)</label><input type="number" id="loan-emi" placeholder="Auto-calculated"></div>
+      </div>
+      <div class="emi-band">
+        <div class="emi-item"><label>EMI</label><span id="loan-calc-emi">—</span></div>
+        <div class="emi-item"><label>Total Interest</label><span id="loan-calc-interest">—</span></div>
+        <div class="emi-item"><label>Total Payable</label><span id="loan-calc-total">—</span></div>
+      </div>
+      <div class="fo-form-actions" style="margin-top:16px">
+        <button class="fo-btn-cancel" onclick="closeModal('loan-modal')">Cancel</button>
+        <button class="fo-btn-submit" id="loan-submit-btn" onclick="submitLoan()">Add Loan</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="fo-modal-overlay" id="goal-modal">
+  <div class="fo-modal" style="--accent:var(--c-goals)">
+    <div class="fo-modal-header"><div class="fo-modal-title" id="goal-modal-title">Add Goal</div><button class="fo-modal-close" onclick="closeModal('goal-modal')">×</button></div>
+    <div class="fo-modal-body">
+      <div class="fo-field"><label>Goal Name</label><input type="text" id="goal-name" placeholder="e.g. Emergency Fund, Europe Trip"></div>
+      <div class="fo-grid2">
+        <div class="fo-field"><label>Target Amount (₹)</label><input type="number" id="goal-target" placeholder="0" oninput="calcGoal()"></div>
+        <div class="fo-field"><label>Saved So Far (₹)</label><input type="number" id="goal-saved" placeholder="0" oninput="calcGoal()"></div>
+      </div>
+      <div class="fo-grid2">
+        <div class="fo-field"><label>Target Date</label><input type="date" id="goal-date" oninput="calcGoal()"></div>
+        <div class="fo-field"><label>Category</label><select id="goal-category"><option>Emergency Fund</option><option>Travel</option><option>Vehicle</option><option>Home</option><option>Education</option><option>Wedding</option><option>Retirement</option><option>Other</option></select></div>
+      </div>
+      <div class="calc-band">
+        <div class="calc-band-item"><label>Progress</label><span id="goal-calc-pct">—</span></div>
+        <div class="calc-band-item"><label>Remaining</label><span id="goal-calc-rem">—</span></div>
+        <div class="calc-band-item"><label>Months Left</label><span id="goal-calc-months">—</span></div>
+      </div>
+      <div class="fo-form-actions">
+        <button class="fo-btn-cancel" onclick="closeModal('goal-modal')">Cancel</button>
+        <button class="fo-btn-submit" id="goal-submit-btn" onclick="submitGoal()">Add Goal</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="fo-modal-overlay" id="insurance-modal">
+  <div class="fo-modal" style="width:600px">
+    <div class="fo-modal-header"><div class="fo-modal-title" id="insurance-modal-title">Add Policy</div><button class="fo-modal-close" onclick="closeModal('insurance-modal')">×</button></div>
+    <div class="fo-modal-body">
+      <div class="fo-grid2">
+        <div class="fo-field"><label>Policy Name</label><input id="ins-name" placeholder="e.g. HDFC Ergo Health Optima"></div>
+        <div class="fo-field"><label>Insurer</label><input id="ins-insurer" placeholder="e.g. LIC, HDFC Ergo, Star Health"></div>
+      </div>
+      <div class="fo-grid2">
+        <div class="fo-field"><label>Type</label><select id="ins-type"><option>Health</option><option>Life</option><option>Vehicle</option><option>Accidental</option></select></div>
+        <div class="fo-field"><label>Policy Number</label><input id="ins-policy-no" placeholder="Optional"></div>
+      </div>
+      <div class="fo-grid2">
+        <div class="fo-field"><label>Sum Assured / Coverage (₹)</label><input id="ins-coverage" type="number" min="0" placeholder="0" oninput="calcInsurance()"></div>
+        <div class="fo-field"><label>Premium Amount (₹)</label><input id="ins-premium" type="number" min="0" placeholder="0" oninput="calcInsurance()"></div>
+      </div>
+      <div class="fo-grid3">
+        <div class="fo-field"><label>Frequency</label><select id="ins-frequency" onchange="calcInsurance()"><option>Monthly</option><option>Quarterly</option><option>Half-Yearly</option><option selected>Annually</option></select></div>
+        <div class="fo-field"><label>Start Date</label><input id="ins-start" type="date"></div>
+        <div class="fo-field"><label>Renewal Date</label><input id="ins-renewal" type="date"></div>
+      </div>
+      <div class="fo-grid2">
+        <div class="fo-field"><label>Nominee</label><input id="ins-nominee" placeholder="e.g. Spouse / Father"></div>
+        <div class="fo-field"><label>Status</label><select id="ins-status"><option>Active</option><option>Lapsed</option><option>Pending Renewal</option></select></div>
+      </div>
+      <div class="fo-field"><label>Notes</label><input id="ins-notes" placeholder="Optional"></div>
+      <div style="background:var(--bg3);border-radius:10px;padding:12px 16px;margin-top:4px;display:flex;gap:24px;font-family:var(--mono);font-size:12px">
+        <div><div style="font-size:10px;color:var(--text3);margin-bottom:2px">ANNUAL PREMIUM</div><div id="ins-calc-annual" style="color:var(--down);font-size:14px;font-weight:600">₹0</div></div>
+        <div><div style="font-size:10px;color:var(--text3);margin-bottom:2px">MONTHLY COST</div><div id="ins-calc-monthly" style="font-size:14px;color:var(--text2)">₹0</div></div>
+        <div><div style="font-size:10px;color:var(--text3);margin-bottom:2px">SUM ASSURED</div><div id="ins-calc-coverage" style="color:var(--c-insurance);font-size:14px;font-weight:600">₹0</div></div>
+      </div>
+      <div class="fo-form-actions">
+        <button class="fo-btn-cancel" onclick="closeModal('insurance-modal')">Cancel</button>
+        <button class="fo-btn-submit" id="insurance-submit-btn" onclick="submitInsurance()">Add Policy</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm delete (FinanceOS) -->
+<div class="fo-confirm-overlay" id="fo-confirm-modal">
+  <div class="fo-confirm-box">
+    <div class="fo-confirm-title">⚠ Confirm Delete</div>
+    <div class="fo-confirm-msg" id="fo-confirm-msg"></div>
+    <div style="display:flex;gap:10px;justify-content:flex-end">
+      <button class="fo-btn-cancel" id="fo-confirm-no">Cancel</button>
+      <button id="fo-confirm-yes" style="background:var(--down);color:#fff;border:none;border-radius:8px;padding:9px 22px;font-size:13px;font-weight:600;cursor:pointer">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm delete (TradeDesk) -->
+<div class="modal-overlay" id="confirm-modal">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-header"><div class="modal-title" style="color:var(--down)">⚠ Confirm Delete</div></div>
+    <div class="modal-body">
+      <p id="confirm-msg" style="font-family:var(--mono);font-size:13px;color:var(--text2);margin-bottom:24px;line-height:1.5"></p>
+      <div class="form-actions">
+        <button class="btn-cancel" id="confirm-no">Cancel</button>
+        <button id="confirm-yes" style="background:var(--down);color:#fff;border:none;border-radius:8px;padding:9px 22px;font-size:13px;font-family:var(--sans);font-weight:600;cursor:pointer">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════
+// FINANCEOS JS
+// ══════════════════════════════════════
+const KEYS={income:'fos_income',expenses:'fos_expenses',mf:'fos_mf',ppf:'fos_ppf',gold:'fos_gold',loans:'fos_loans',goals:'fos_goals',insurance:'fos_insurance'};
+function load(k){try{return JSON.parse(localStorage.getItem(k))||[]}catch(e){return[]}}
+function save(k,arr){localStorage.setItem(k,JSON.stringify(arr))}
+
+function fmtINR(v){
+  const a=Math.abs(v);
+  let s=a>=10000000?'₹'+(a/10000000).toFixed(2)+'Cr':a>=100000?'₹'+(a/100000).toFixed(2)+'L':a>=1000?'₹'+Math.round(a).toLocaleString('en-IN'):'₹'+Math.round(a);
+  return(v<0?'-':'')+s;
+}
+function fmtPct(v){return(v>=0?'+':'')+v.toFixed(2)+'%'}
+function pnlCls(v){return v>0?'val-up':v<0?'val-down':'val-neutral'}
+function todayStr(){return new Date().toISOString().split('T')[0]}
+function thisMonth(){const d=new Date();return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`}
+function fmtMonth(ym){const[y,m]=ym.split('-');return new Date(y,m-1,1).toLocaleString('default',{month:'short',year:'numeric'})}
+
+let currentPage='home';
+let tdInitialized=false;
+
+function showPage(p){
+  document.querySelectorAll('.fo-page').forEach(el=>el.classList.remove('active'));
+  document.getElementById('td-app').classList.remove('active');
+  document.querySelectorAll('.fo-nav-item').forEach(el=>el.classList.remove('active'));
+  if(p==='trade'){
+    document.getElementById('td-app').classList.add('active');
+    if(!tdInitialized){tdInitialized=true;if(typeof tdInit==='function')tdInit();}
+  } else {
+    const pg=document.getElementById('page-'+p);
+    if(pg) pg.classList.add('active');
+  }
+  document.querySelectorAll('.fo-nav-item').forEach(el=>{
+    if(el.getAttribute('onclick')==="showPage('"+p+"')") el.classList.add('active');
+  });
+  currentPage=p;
+  if(p!=='trade') renderPage(p);
+  updateSidebar();
+}
+
+function renderPage(p){
+  if(p==='home') renderHome();
+  else if(p==='income') renderIncome();
+  else if(p==='expenses') renderExpenses();
+  else if(p==='mf') renderMf();
+  else if(p==='ppf') renderPpf();
+  else if(p==='gold') renderGold();
+  else if(p==='loans') renderLoans();
+  else if(p==='goals') renderGoals();
+  else if(p==='insurance') renderInsurance();
+  else if(p==='networth') renderNetWorth();
+}
+
+function foConfirm(msg,onYes){
+  const m=document.getElementById('fo-confirm-modal');
+  document.getElementById('fo-confirm-msg').textContent=msg;
+  m.classList.add('open');
+  document.getElementById('fo-confirm-yes').onclick=()=>{m.classList.remove('open');onYes()};
+  document.getElementById('fo-confirm-no').onclick=()=>m.classList.remove('open');
+}
+
+function openModal(id){document.getElementById(id).classList.add('open')}
+function closeModal(id){
+  document.getElementById(id).classList.remove('open');
+  // reset editing state
+  editingIncome=editingExpense=editingMf=editingPpf=editingGold=editingLoan=editingGoal=null;
+  document.getElementById(id).querySelectorAll('input[type=text],input[type=number]').forEach(el=>el.value='');
+}
+document.addEventListener('click',e=>{
+  if(e.target.classList.contains('fo-modal-overlay')) closeModal(e.target.id);
+});
+
+function populateMonthFilter(selectId,dataKey){
+  const sel=document.getElementById(selectId);
+  const months=[...new Set(load(dataKey).map(i=>i.date.slice(0,7)))].sort().reverse();
+  const tm=thisMonth();
+  if(!months.includes(tm)) months.unshift(tm);
+  const cur=sel.value||tm;
+  sel.innerHTML=months.map(m=>`<option value="${m}" ${m===cur?'selected':''}>${fmtMonth(m)}</option>`).join('');
+}
+
+// ── INCOME ──
+let editingIncome=null;
+function openIncomeModal(id){
+  editingIncome=id??null;
+  document.getElementById('income-modal-title').textContent=id?'Edit Income':'Add Income';
+  document.getElementById('income-submit-btn').textContent=id?'Save Changes':'Add Income';
+  if(id){
+    const r=load(KEYS.income).find(x=>x.id===id);
+    if(r){document.getElementById('inc-date').value=r.date;document.getElementById('inc-amount').value=r.amount;document.getElementById('inc-source').value=r.source;document.getElementById('inc-category').value=r.category;document.getElementById('inc-notes').value=r.notes||'';}
+  } else {
+    document.getElementById('inc-date').value=todayStr();
+  }
+  openModal('income-modal');
+}
+function submitIncome(){
+  const date=document.getElementById('inc-date').value;
+  const amount=parseFloat(document.getElementById('inc-amount').value)||0;
+  const source=document.getElementById('inc-source').value.trim();
+  if(!date||!amount||!source){alert('Fill Date, Amount and Source');return}
+  const rec={id:editingIncome||Date.now(),date,amount,source,category:document.getElementById('inc-category').value,notes:document.getElementById('inc-notes').value};
+  let arr=load(KEYS.income);
+  arr=editingIncome?arr.map(x=>x.id===editingIncome?rec:x):[...arr,rec];
+  save(KEYS.income,arr);
+  closeModal('income-modal');
+  renderIncome();updateSidebar();renderHome();
+}
+function renderIncome(){
+  populateMonthFilter('income-month-filter',KEYS.income);
+  const sel=document.getElementById('income-month-filter').value||thisMonth();
+  const all=load(KEYS.income),month=all.filter(x=>x.date.startsWith(sel));
+  const total=month.reduce((s,x)=>s+x.amount,0),allTotal=all.reduce((s,x)=>s+x.amount,0);
+  document.getElementById('income-mtd').textContent=fmtINR(total);
+  document.getElementById('income-mtd-sub').textContent=month.length+' entries';
+  document.getElementById('income-alltime').textContent=fmtINR(allTotal);
+  document.getElementById('income-alltime-sub').textContent=all.length+' entries';
+  document.getElementById('income-sub').textContent=month.length+' entries · '+fmtMonth(sel);
+  const bySrc={};month.forEach(x=>bySrc[x.source]=(bySrc[x.source]||0)+x.amount);
+  const top=Object.entries(bySrc).sort((a,b)=>b[1]-a[1])[0];
+  document.getElementById('income-top-src').textContent=top?top[0]:'—';
+  document.getElementById('income-top-src-val').textContent=top?fmtINR(top[1]):'—';
+  const tbody=document.getElementById('income-tbody');
+  const sorted=[...month].sort((a,b)=>b.date.localeCompare(a.date));
+  const empty=document.getElementById('income-empty');
+  if(!sorted.length){tbody.innerHTML='';empty.style.display='';return}
+  empty.style.display='none';
+  tbody.innerHTML=sorted.map(x=>{
+    const eid=x.id;
+    return `<tr>
+      <td style="color:var(--text2);font-family:var(--mono)">${x.date}</td>
+      <td style="font-weight:500">${x.source}</td>
+      <td><span class="fo-badge" style="background:rgba(0,212,170,.12);color:var(--c-income)">${x.category}</span></td>
+      <td class="val-up" style="font-family:var(--mono);font-weight:600">${fmtINR(x.amount)}</td>
+      <td style="color:var(--text3);font-size:11px">${x.notes||'—'}</td>
+      <td><div style="display:flex;gap:4px;justify-content:flex-end">
+        <button onclick="openIncomeModal(${eid})" style="background:rgba(124,106,247,.15);border:1px solid rgba(124,106,247,.3);color:#a29bfe;border-radius:5px;padding:3px 9px;font-size:10px;cursor:pointer">Edit</button>
+        <button onclick="delRecord('income',${eid})" style="background:rgba(255,92,106,.1);border:1px solid rgba(255,92,106,.25);color:#ff5c6a;border-radius:5px;padding:3px 9px;font-size:10px;cursor:pointer">Del</button>
+      </div></td></tr>`;
+  }).join('');
+}
+
+// ── EXPENSES ──
+let editingExpense=null;
+function openExpenseModal(id){
+  editingExpense=id??null;
+  document.getElementById('expense-modal-title').textContent=id?'Edit Expense':'Add Expense';
+  document.getElementById('expense-submit-btn').textContent=id?'Save Changes':'Add Expense';
+  if(id){
+    const r=load(KEYS.expenses).find(x=>x.id===id);
+    if(r){document.getElementById('exp-date').value=r.date;document.getElementById('exp-amount').value=r.amount;document.getElementById('exp-merchant').value=r.merchant;document.getElementById('exp-category').value=r.category;document.getElementById('exp-notes').value=r.notes||'';}
+  } else {
+    document.getElementById('exp-date').value=todayStr();
+  }
+  openModal('expense-modal');
+}
+function submitExpense(){
+  const date=document.getElementById('exp-date').value;
+  const amount=parseFloat(document.getElementById('exp-amount').value)||0;
+  const merchant=document.getElementById('exp-merchant').value.trim();
+  if(!date||!amount||!merchant){alert('Fill Date, Amount and Merchant');return}
+  const rec={id:editingExpense||Date.now(),date,amount,merchant,category:document.getElementById('exp-category').value,notes:document.getElementById('exp-notes').value};
+  let arr=load(KEYS.expenses);
+  arr=editingExpense?arr.map(x=>x.id===editingExpense?rec:x):[...arr,rec];
+  save(KEYS.expenses,arr);
+  closeModal('expense-modal');
+  renderExpenses();updateSidebar();renderHome();
+}
+function renderExpenses(){
+  populateMonthFilter('expense-month-filter',KEYS.expenses);
+  const sel=document.getElementById('expense-month-filter').value||thisMonth();
+  const all=load(KEYS.expenses),month=all.filter(x=>x.date.startsWith(sel));
+  const total=month.reduce((s,x)=>s+x.amount,0),allTotal=all.reduce((s,x)=>s+x.amount,0);
+  document.getElementById('expense-mtd').textContent=fmtINR(total);
+  document.getElementById('expense-mtd-sub').textContent=month.length+' entries';
+  document.getElementById('expense-alltime').textContent=fmtINR(allTotal);
+  document.getElementById('expense-alltime-sub').textContent=all.length+' entries';
+  document.getElementById('expense-sub').textContent=month.length+' entries · '+fmtMonth(sel);
+  const byCat={};month.forEach(x=>byCat[x.category]=(byCat[x.category]||0)+x.amount);
+  const top=Object.entries(byCat).sort((a,b)=>b[1]-a[1])[0];
+  document.getElementById('expense-top-cat').textContent=top?top[0]:'—';
+  document.getElementById('expense-top-cat-val').textContent=top?fmtINR(top[1]):'—';
+  const tbody=document.getElementById('expense-tbody');
+  const sorted=[...month].sort((a,b)=>b.date.localeCompare(a.date));
+  const empty=document.getElementById('expense-empty');
+  if(!sorted.length){tbody.innerHTML='';empty.style.display='';return}
+  empty.style.display='none';
+  tbody.innerHTML=sorted.map(x=>{
+    const eid=x.id;
+    return `<tr>
+      <td style="color:var(--text2);font-family:var(--mono)">${x.date}</td>
+      <td style="font-weight:500">${x.merchant}</td>
+      <td><span class="fo-badge" style="background:rgba(255,92,106,.12);color:var(--c-expense)">${x.category}</span></td>
+      <td class="val-down" style="font-family:var(--mono);font-weight:600">${fmtINR(x.amount)}</td>
+      <td style="color:var(--text3);font-size:11px">${x.notes||'—'}</td>
+      <td><div style="display:flex;gap:4px;justify-content:flex-end">
+        <button onclick="openExpenseModal(${eid})" style="background:rgba(124,106,247,.15);border:1px solid rgba(124,106,247,.3);color:#a29bfe;border-radius:5px;padding:3px 9px;font-size:10px;cursor:pointer">Edit</button>
+        <button onclick="delRecord('expenses',${eid})" style="background:rgba(255,92,106,.1);border:1px solid rgba(255,92,106,.25);color:#ff5c6a;border-radius:5px;padding:3px 9px;font-size:10px;cursor:pointer">Del</button>
+      </div></td></tr>`;
+  }).join('');
+}
+
+// ── MF ──
+let editingMf=null;
+function calcMfReturn(){
+  const inv=parseFloat(document.getElementById('mf-invested-input').value)||0;
+  const cur=parseFloat(document.getElementById('mf-current-input').value)||0;
+  const gain=cur-inv,ret=inv>0?(gain/inv)*100:0;
+  const gs=document.getElementById('mf-calc-gain'),rs=document.getElementById('mf-calc-ret');
+  gs.textContent=inv?fmtINR(gain):'—';gs.className=pnlCls(gain);
+  rs.textContent=inv?fmtPct(ret):'—';rs.className=pnlCls(ret);
+}
+function openMfModal(id){
+  editingMf=id??null;
+  document.getElementById('mf-modal-title').textContent=id?'Edit Investment':'Add Investment';
+  document.getElementById('mf-submit-btn').textContent=id?'Save Changes':'Add Investment';
+  if(id){
+    const r=load(KEYS.mf).find(x=>x.id===id);
+    if(r){document.getElementById('mf-name').value=r.name;document.getElementById('mf-type').value=r.type;document.getElementById('mf-invested-input').value=r.invested;document.getElementById('mf-current-input').value=r.current;document.getElementById('mf-sip').value=r.sip||'';document.getElementById('mf-start').value=r.start||'';document.getElementById('mf-folio').value=r.folio||'';calcMfReturn();}
+  }
+  openModal('mf-modal');
+}
+function submitMf(){
+  const name=document.getElementById('mf-name').value.trim();
+  const invested=parseFloat(document.getElementById('mf-invested-input').value)||0;
+  if(!name||!invested){alert('Fill Name and Amount Invested');return}
+  const rec={id:editingMf||Date.now(),name,type:document.getElementById('mf-type').value,invested,current:parseFloat(document.getElementById('mf-current-input').value)||invested,sip:parseFloat(document.getElementById('mf-sip').value)||0,start:document.getElementById('mf-start').value,folio:document.getElementById('mf-folio').value};
+  let arr=load(KEYS.mf);
+  arr=editingMf?arr.map(x=>x.id===editingMf?rec:x):[...arr,rec];
+  save(KEYS.mf,arr);closeModal('mf-modal');renderMf();updateSidebar();renderHome();
+}
+function renderMf(){
+  const all=load(KEYS.mf);
+  const tInv=all.reduce((s,x)=>s+x.invested,0),tCur=all.reduce((s,x)=>s+x.current,0);
+  const gain=tCur-tInv,ret=tInv>0?(gain/tInv)*100:0;
+  document.getElementById('mf-invested').textContent=fmtINR(tInv);
+  document.getElementById('mf-current').textContent=fmtINR(tCur);
+  document.getElementById('mf-gain').textContent=fmtINR(gain);
+  document.getElementById('mf-gain').className='fo-card-val '+pnlCls(gain);
+  document.getElementById('mf-xirr').textContent=tInv?fmtPct(ret):'—';
+  document.getElementById('mf-xirr').className='fo-card-val '+pnlCls(ret);
+  document.getElementById('mf-sub').textContent=all.length+' holdings';
+  const tbody=document.getElementById('mf-tbody');
+  const empty=document.getElementById('mf-empty');
+  if(!all.length){tbody.innerHTML='';empty.style.display='';return}
+  empty.style.display='none';
+  tbody.innerHTML=all.map(x=>{
+    const g=x.current-x.invested,r=x.invested>0?(g/x.invested)*100:0;
+    const eid=x.id;
+    return `<tr>
+      <td style="font-weight:500">${x.name}</td>
+      <td><span class="fo-badge" style="background:rgba(62,207,255,.12);color:var(--c-mf)">${x.type}</span></td>
+      <td style="font-family:var(--mono)">${fmtINR(x.invested)}</td>
+      <td style="font-family:var(--mono)">${fmtINR(x.current)}</td>
+      <td class="${pnlCls(g)}" style="font-family:var(--mono)">${fmtINR(g)}</td>
+      <td class="${pnlCls(r)}" style="font-family:var(--mono)">${fmtPct(r)}</td>
+      <td style="font-family:var(--mono);color:var(--text3)">${x.sip?fmtINR(x.sip)+'/mo':'—'}</td>
+      <td style="font-family:var(--mono);color:var(--text3)">${x.start||'—'}</td>
+      <td><div style="display:flex;gap:4px;justify-content:flex-end">
+        <button onclick="openMfModal(${eid})" style="background:rgba(124,106,247,.15);border:1px solid rgba(124,106,247,.3);color:#a29bfe;border-radius:5px;padding:3px 9px;font-size:10px;cursor:pointer">Edit</button>
+        <button onclick="delRecord('mf',${eid})" style="background:rgba(255,92,106,.1);border:1px solid rgba(255,92,106,.25);color:#ff5c6a;border-radius:5px;padding:3px 9px;font-size:10px;cursor:pointer">Del</button>
+      </div></td></tr>`;
+  }).join('');
+}
+
+// ── PPF ──
+let editingPpf=null;
+function calcPpf(){
+  const inv=parseFloat(document.getElementById('ppf-total-invested').value)||0;
+  const bal=parseFloat(document.getElementById('ppf-balance-input').value)||0;
+  document.getElementById('ppf-calc-interest').textContent=inv?fmtINR(bal-inv):'—';
+  const op=document.getElementById('ppf-opened').value;
+  if(op){const d=new Date(op);d.setFullYear(d.getFullYear()+15);document.getElementById('ppf-calc-maturity').textContent=d.toLocaleDateString('en-IN',{year:'numeric',month:'short'});}
+}
+function openPpfModal(id){
+  editingPpf=id??null;
+  document.getElementById('ppf-modal-title').textContent=id?'Edit Account':'Add PPF Account';
+  document.getElementById('ppf-submit-btn').textContent=id?'Save Changes':'Add Account';
+  if(id){
+    const r=load(KEYS.ppf).find(x=>x.id===id);
+    if(r){document.getElementById('ppf-name').value=r.name;document.getElementById('ppf-bank').value=r.bank||'';document.getElementById('ppf-opened').value=r.opened||'';document.getElementById('ppf-yearly').value=r.yearly||'';document.getElementById('ppf-balance-input').value=r.balance;document.getElementById('ppf-total-invested').value=r.invested||'';document.getElementById('ppf-rate').value=r.rate||7.1;calcPpf();}
+  }
+  openModal('ppf-modal');
+}
+function submitPpf(){
+  const name=document.getElementById('ppf-name').value.trim();
+  if(!name){alert('Fill Account Holder Name');return}
+  const rec={id:editingPpf||Date.now(),name,bank:document.getElementById('ppf-bank').value,opened:document.getElementById('ppf-opened').value,yearly:parseFloat(document.getElementById('ppf-yearly').value)||0,balance:parseFloat(document.getElementById('ppf-balance-input').value)||0,invested:parseFloat(document.getElementById('ppf-total-invested').value)||0,rate:parseFloat(document.getElementById('ppf-rate').value)||7.1};
+  let arr=load(KEYS.ppf);
+  arr=editingPpf?arr.map(x=>x.id===editingPpf?rec:x):[...arr,rec];
+  save(KEYS.ppf,arr);closeModal('ppf-modal');renderPpf();updateSidebar();renderHome();
+}
+function renderPpf(){
+  const all=load(KEYS.ppf);
+  const tBal=all.reduce((s,x)=>s+x.balance,0),tInv=all.reduce((s,x)=>s+x.invested,0);
+  document.getElementById('ppf-balance').textContent=fmtINR(tBal);
+  document.getElementById('ppf-invested').textContent=fmtINR(tInv);
+  document.getElementById('ppf-interest').textContent=fmtINR(tBal-tInv);
+  document.getElementById('ppf-sub').textContent=all.length+' account'+(all.length!==1?'s':'');
+  const tbody=document.getElementById('ppf-tbody');
+  const empty=document.getElementById('ppf-empty');
+  if(!all.length){tbody.innerHTML='';empty.style.display='';return}
+  empty.style.display='none';
+  tbody.innerHTML=all.map(x=>{
+    let mat='—';if(x.opened){const d=new Date(x.opened);d.setFullYear(d.getFullYear()+15);mat=d.toLocaleDateString('en-IN',{year:'numeric',month:'short'});}
+    const eid=x.id;
+    return `<tr>
+      <td style="font-weight:500">${x.name}</td>
+      <td style="color:var(--text2)">${x.bank||'—'}</td>
+      <td style="font-family:var(--mono);color:var(--text3)">${x.opened||'—'}</td>
+      <td style="font-family:var(--mono)">${x.yearly?fmtINR(x.yearly)+'/yr':'—'}</td>
+      <td style="font-family:var(--mono)">${fmtINR(x.invested)}</td>
+      <td style="font-family:var(--mono);font-weight:600">${fmtINR(x.balance)}</td>
+      <td style="font-family:var(--mono);color:var(--text3)">${mat}</td>
+      <td style="font-family:var(--mono);color:var(--text3)">${x.rate}%</td>
+      <td><div style="display:flex;gap:4px;justify-content:flex-end">
+        <button onclick="openPpfModal(${eid})" style="background:rgba(124,106,247,.15);border:1px solid rgba(124,106,247,.3);color:#a29bfe;border-radius:5px;padding:3px 9px;font-size:10px;cursor:pointer">Edit</button>
+        <button onclick="delRecord('ppf',${eid})" style="background:rgba(255,92,106,.1);border:1px solid rgba(255,92,106,.25);color:#ff5c6a;border-radius:5px;padding:3px 9px;font-size:10px;cursor:pointer">Del</button>
+      </div></td></tr>`;
+  }).join('');
+}
+
+// ── GOLD ──
+let editingGold=null;
+function calcGold(){
+  const qty=parseFloat(document.getElementById('gold-qty').value)||0;
+  const buy=parseFloat(document.getElementById('gold-buy').value)||0;
+  const cmp=parseFloat(document.getElementById('gold-cmp').value)||0;
+  const inv=qty*buy,cur=qty*(cmp||buy),gain=cur-inv;
+  document.getElementById('gold-calc-invested').textContent=inv?fmtINR(inv):'—';
+  document.getElementById('gold-calc-current').textContent=cmp?fmtINR(cur):'—';
+  const gs=document.getElementById('gold-calc-gain');
+  gs.textContent=(inv&&cmp)?fmtINR(gain):'—';gs.className=pnlCls(gain);
+}
+function openGoldModal(id){
+  editingGold=id??null;
+  document.getElementById('gold-modal-title').textContent=id?'Edit Gold':'Add Gold';
+  document.getElementById('gold-submit-btn').textContent=id?'Save Changes':'Add Gold';
+  if(id){
+    const r=load(KEYS.gold).find(x=>x.id===id);
+    if(r){document.getElementById('gold-name').value=r.name;document.getElementById('gold-type').value=r.type;document.getElementById('gold-qty').value=r.qty;document.getElementById('gold-buy').value=r.buy;document.getElementById('gold-cmp').value=r.cmp||'';document.getElementById('gold-date').value=r.date||'';calcGold();}
+  }
+  openModal('gold-modal');
+}
+function submitGold(){
+  const name=document.getElementById('gold-name').value.trim();
+  const qty=parseFloat(document.getElementById('gold-qty').value)||0;
+  const buy=parseFloat(document.getElementById('gold-buy').value)||0;
+  if(!name||!qty||!buy){alert('Fill Name, Qty and Buy Price');return}
+  const rec={id:editingGold||Date.now(),name,type:document.getElementById('gold-type').value,qty,buy,cmp:parseFloat(document.getElementById('gold-cmp').value)||0,date:document.getElementById('gold-date').value};
+  let arr=load(KEYS.gold);
+  arr=editingGold?arr.map(x=>x.id===editingGold?rec:x):[...arr,rec];
+  save(KEYS.gold,arr);closeModal('gold-modal');renderGold();updateSidebar();renderHome();
+}
+function renderGold(){
+  const all=load(KEYS.gold);
+  const tInv=all.reduce((s,x)=>s+x.qty*x.buy,0),tCur=all.reduce((s,x)=>s+x.qty*(x.cmp||x.buy),0);
+  const gain=tCur-tInv;
+  document.getElementById('gold-invested').textContent=fmtINR(tInv);
+  document.getElementById('gold-current').textContent=fmtINR(tCur);
+  document.getElementById('gold-gain').textContent=fmtINR(gain);
+  document.getElementById('gold-gain').className='fo-card-val '+pnlCls(gain);
+  document.getElementById('gold-sub').textContent=all.length+' holding'+(all.length!==1?'s':'');
+  const tbody=document.getElementById('gold-tbody');
+  const empty=document.getElementById('gold-empty');
+  if(!all.length){tbody.innerHTML='';empty.style.display='';return}
+  empty.style.display='none';
+  tbody.innerHTML=all.map(x=>{
+    const inv=x.qty*x.buy,cur=x.qty*(x.cmp||x.buy),g=cur-inv;
+    const eid=x.id;
+    return `<tr>
+      <td style="font-weight:500">${x.name}</td>
+      <td><span class="fo-badge" style="background:rgba(245,166,35,.12);color:var(--c-gold)">${x.type}</span></td>
+      <td style="font-family:var(--mono)">${x.qty}</td>
+      <td style="font-family:var(--mono)">${fmtINR(x.buy)}</td>
+      <td style="font-family:var(--mono);color:var(--amber)">${x.cmp?fmtINR(x.cmp):'—'}</td>
+      <td style="font-family:var(--mono)">${fmtINR(inv)}</td>
+      <td style="font-family:var(--mono)">${x.cmp?fmtINR(cur):'—'}</td>
+      <td class="${pnlCls(g)}" style="font-family:var(--mono)">${x.cmp?fmtINR(g):'—'}</td>
+      <td><div style="display:flex;gap:4px;justify-content:flex-end">
+        <button onclick="openGoldModal(${eid})" style="background:rgba(124,106,247,.15);border:1px solid rgba(124,106,247,.3);color:#a29bfe;border-radius:5px;padding:3px 9px;font-size:10px;cursor:pointer">Edit</button>
+        <button onclick="delRecord('gold',${eid})" style="background:rgba(255,92,106,.1);border:1px solid rgba(255,92,106,.25);color:#ff5c6a;border-radius:5px;padding:3px 9px;font-size:10px;cursor:pointer">Del</button>
+      </div></td></tr>`;
+  }).join('');
+}
+
+// ── LOANS ──
+let editingLoan=null;
+function calcLoan(){
+  const p=parseFloat(document.getElementById('loan-outstanding').value)||0;
+  const r=(parseFloat(document.getElementById('loan-rate').value)||0)/100/12;
+  const n=parseFloat(document.getElementById('loan-tenure').value)||0;
+  if(p>0&&r>0&&n>0){
+    const emi=p*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1);
+    document.getElementById('loan-calc-emi').textContent=fmtINR(Math.round(emi));
+    document.getElementById('loan-calc-interest').textContent=fmtINR(Math.round(emi*n-p));
+    document.getElementById('loan-calc-total').textContent=fmtINR(Math.round(emi*n));
+    if(!document.getElementById('loan-emi').value) document.getElementById('loan-emi').value=Math.round(emi);
+  }
+}
+function openLoanModal(id){
+  editingLoan=id??null;
+  document.getElementById('loan-modal-title').textContent=id?'Edit Loan':'Add Loan';
+  document.getElementById('loan-submit-btn').textContent=id?'Save Changes':'Add Loan';
+  if(id){
+    const r=load(KEYS.loans).find(x=>x.id===id);
+    if(r){document.getElementById('loan-name').value=r.name;document.getElementById('loan-lender').value=r.lender||'';document.getElementById('loan-type').value=r.type;document.getElementById('loan-start').value=r.start||'';document.getElementById('loan-principal').value=r.principal||'';document.getElementById('loan-outstanding').value=r.outstanding;document.getElementById('loan-rate').value=r.rate||'';document.getElementById('loan-tenure').value=r.tenure||'';document.getElementById('loan-emi').value=r.emi||'';calcLoan();}
+  } else {
+    document.getElementById('loan-start').value=todayStr();
+  }
+  openModal('loan-modal');
+}
+function submitLoan(){
+  const name=document.getElementById('loan-name').value.trim();
+  const outstanding=parseFloat(document.getElementById('loan-outstanding').value)||0;
+  if(!name||!outstanding){alert('Fill Loan Name and Outstanding amount');return}
+  const rec={id:editingLoan||Date.now(),name,lender:document.getElementById('loan-lender').value,type:document.getElementById('loan-type').value,start:document.getElementById('loan-start').value,principal:parseFloat(document.getElementById('loan-principal').value)||0,outstanding,rate:parseFloat(document.getElementById('loan-rate').value)||0,tenure:parseFloat(document.getElementById('loan-tenure').value)||0,emi:parseFloat(document.getElementById('loan-emi').value)||0};
+  let arr=load(KEYS.loans);
+  arr=editingLoan?arr.map(x=>x.id===editingLoan?rec:x):[...arr,rec];
+  save(KEYS.loans,arr);closeModal('loan-modal');renderLoans();updateSidebar();renderHome();
+}
+function renderLoans(){
+  const all=load(KEYS.loans);
+  const tOut=all.reduce((s,x)=>s+x.outstanding,0),tEmi=all.reduce((s,x)=>s+x.emi,0);
+  document.getElementById('loans-outstanding').textContent=fmtINR(tOut);
+  document.getElementById('loans-emi').textContent=fmtINR(tEmi);
+  document.getElementById('loans-count').textContent=all.length;
+  document.getElementById('loans-sub').textContent=all.length+' active loan'+(all.length!==1?'s':'');
+  const tbody=document.getElementById('loans-tbody');
+  const empty=document.getElementById('loans-empty');
+  if(!all.length){tbody.innerHTML='';empty.style.display='';return}
+  empty.style.display='none';
+  tbody.innerHTML=all.map(x=>{
+    const eid=x.id;
+    return `<tr>
+      <td style="font-weight:500">${x.name}</td>
+      <td style="color:var(--text2)">${x.lender||'—'}</td>
+      <td><span class="fo-badge" style="background:rgba(255,124,82,.12);color:var(--c-loans)">${x.type}</span></td>
+      <td style="font-family:var(--mono)">${fmtINR(x.principal)}</td>
+      <td class="val-down" style="font-family:var(--mono);font-weight:600">${fmtINR(x.outstanding)}</td>
+      <td style="font-family:var(--mono)">${x.emi?fmtINR(x.emi)+'/mo':'—'}</td>
+      <td style="font-family:var(--mono);color:var(--amber)">${x.rate}%</td>
+      <td style="font-family:var(--mono);color:var(--text3)">${x.start||'—'}</td>
+      <td><div style="display:flex;gap:4px;justify-content:flex-end">
+        <button onclick="openLoanModal(${eid})" style="background:rgba(124,106,247,.15);border:1px solid rgba(124,106,247,.3);color:#a29bfe;border-radius:5px;padding:3px 9px;font-size:10px;cursor:pointer">Edit</button>
+        <button onclick="delRecord('loans',${eid})" style="background:rgba(255,92,106,.1);border:1px solid rgba(255,92,106,.25);color:#ff5c6a;border-radius:5px;padding:3px 9px;font-size:10px;cursor:pointer">Del</button>
+      </div></td></tr>`;
+  }).join('');
+}
+
+// ── GOALS ──
+let editingGoal=null;
+function calcGoal(){
+  const target=parseFloat(document.getElementById('goal-target').value)||0;
+  const saved=parseFloat(document.getElementById('goal-saved').value)||0;
+  const pct=target>0?Math.min(100,(saved/target)*100):0;
+  const rem=Math.max(0,target-saved);
+  const date=document.getElementById('goal-date').value;
+  let months='—';
+  if(date){const ms=new Date(date)-new Date();months=Math.max(0,Math.ceil(ms/1000/60/60/24/30));}
+  document.getElementById('goal-calc-pct').textContent=target?pct.toFixed(1)+'%':'—';
+  document.getElementById('goal-calc-rem').textContent=target?fmtINR(rem):'—';
+  document.getElementById('goal-calc-months').textContent=months;
+}
+function openGoalModal(id){
+  editingGoal=id??null;
+  document.getElementById('goal-modal-title').textContent=id?'Edit Goal':'Add Goal';
+  document.getElementById('goal-submit-btn').textContent=id?'Save Changes':'Add Goal';
+  if(id){
+    const r=load(KEYS.goals).find(x=>x.id===id);
+    if(r){document.getElementById('goal-name').value=r.name;document.getElementById('goal-target').value=r.target;document.getElementById('goal-saved').value=r.saved;document.getElementById('goal-date').value=r.date||'';document.getElementById('goal-category').value=r.category;calcGoal();}
+  }
+  openModal('goal-modal');
+}
+function submitGoal(){
+  const name=document.getElementById('goal-name').value.trim();
+  const target=parseFloat(document.getElementById('goal-target').value)||0;
+  if(!name||!target){alert('Fill Goal Name and Target Amount');return}
+  const rec={id:editingGoal||Date.now(),name,target,saved:parseFloat(document.getElementById('goal-saved').value)||0,date:document.getElementById('goal-date').value,category:document.getElementById('goal-category').value};
+  let arr=load(KEYS.goals);
+  arr=editingGoal?arr.map(x=>x.id===editingGoal?rec:x):[...arr,rec];
+  save(KEYS.goals,arr);closeModal('goal-modal');renderGoals();updateSidebar();renderHome();
+}
+function renderGoals(){
+  const all=load(KEYS.goals);
+  const achieved=all.filter(x=>x.saved>=x.target).length;
+  document.getElementById('goals-active').textContent=all.length-achieved;
+  document.getElementById('goals-achieved').textContent=achieved;
+  document.getElementById('goals-target-total').textContent=fmtINR(all.reduce((s,x)=>s+x.target,0));
+  document.getElementById('goals-sub').textContent=all.length+' goal'+(all.length!==1?'s':'')+' · '+achieved+' achieved';
+  const grid=document.getElementById('goals-grid');
+  const empty=document.getElementById('goals-empty');
+  if(!all.length){grid.innerHTML='';empty.style.display='';return}
+  empty.style.display='none';
+  grid.innerHTML=all.map(x=>{
+    const pct=x.target>0?Math.min(100,(x.saved/x.target)*100):0;
+    const rem=Math.max(0,x.target-x.saved);
+    const done=x.saved>=x.target;
+    let months='—';if(x.date){const ms=new Date(x.date)-new Date();months=Math.max(0,Math.ceil(ms/1000/60/60/24/30))+' mo';}
+    const eid=x.id;
+    return `<div class="goal-card">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
+        <div class="goal-card-name">${x.name}</div>
+        ${done?'<span class="fo-badge" style="background:rgba(0,212,170,.15);color:var(--up)">✓ Done</span>':''}
+      </div>
+      <div class="goal-card-meta">${x.category} · ${x.date||'No deadline'}</div>
+      <div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:12px;margin-bottom:8px">
+        <span class="val-up">${fmtINR(x.saved)}</span><span style="color:var(--text3)">of ${fmtINR(x.target)}</span>
+      </div>
+      <div class="fo-progress-track" style="--accent:var(--c-goals)"><div class="fo-progress-fill" style="width:${pct}%"></div></div>
+      <div style="display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--text3);margin-top:6px">
+        <span>${pct.toFixed(1)}% complete</span><span>${rem>0?fmtINR(rem)+' remaining':'Goal reached!'}</span>
+      </div>
+      <div style="display:flex;gap:4px;margin-top:12px">
+        <button onclick="openGoalModal(${eid})" style="flex:1;background:rgba(124,106,247,.15);border:1px solid rgba(124,106,247,.3);color:#a29bfe;border-radius:5px;padding:5px;font-size:10px;cursor:pointer">Edit</button>
+        <button onclick="delRecord('goals',${eid})" style="background:rgba(255,92,106,.1);border:1px solid rgba(255,92,106,.25);color:#ff5c6a;border-radius:5px;padding:5px 10px;font-size:10px;cursor:pointer">Del</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// -- INSURANCE --
+let editingInsurance=null;
+const INS_FREQ={Monthly:12,Quarterly:4,'Half-Yearly':2,Annually:1};
+const INS_COLOR={Health:'#00b4d8',Life:'#7c6af7',Vehicle:'#f5a623',Accidental:'#ff7c52'};
+
+function calcInsurance(){
+  const p=parseFloat(document.getElementById('ins-premium').value)||0;
+  const f=document.getElementById('ins-frequency').value;
+  const c=parseFloat(document.getElementById('ins-coverage').value)||0;
+  const ann=p*(INS_FREQ[f]||1);
+  document.getElementById('ins-calc-annual').textContent=fmtINR(Math.round(ann));
+  document.getElementById('ins-calc-monthly').textContent=fmtINR(Math.round(ann/12));
+  document.getElementById('ins-calc-coverage').textContent=fmtINR(c);
+}
+
+function openInsuranceModal(id){
+  editingInsurance=id??null;
+  document.getElementById('insurance-modal-title').textContent=id?'Edit Policy':'Add Policy';
+  document.getElementById('insurance-submit-btn').textContent=id?'Save Changes':'Add Policy';
+  if(id){
+    const r=load(KEYS.insurance).find(x=>x.id===id);
+    if(r){
+      document.getElementById('ins-name').value=r.name;
+      document.getElementById('ins-insurer').value=r.insurer||'';
+      document.getElementById('ins-type').value=r.type;
+      document.getElementById('ins-policy-no').value=r.policyNo||'';
+      document.getElementById('ins-coverage').value=r.coverage||'';
+      document.getElementById('ins-premium').value=r.premium||'';
+      document.getElementById('ins-frequency').value=r.frequency||'Annually';
+      document.getElementById('ins-start').value=r.startDate||'';
+      document.getElementById('ins-renewal').value=r.renewalDate||'';
+      document.getElementById('ins-nominee').value=r.nominee||'';
+      document.getElementById('ins-status').value=r.status||'Active';
+      document.getElementById('ins-notes').value=r.notes||'';
+      calcInsurance();
+    }
+  }else{
+    ['ins-name','ins-insurer','ins-policy-no','ins-nominee','ins-notes'].forEach(fid=>document.getElementById(fid).value='');
+    document.getElementById('ins-coverage').value='';
+    document.getElementById('ins-premium').value='';
+    document.getElementById('ins-frequency').value='Annually';
+    document.getElementById('ins-type').value='Health';
+    document.getElementById('ins-status').value='Active';
+    document.getElementById('ins-start').value=todayStr();
+    document.getElementById('ins-renewal').value='';
+    calcInsurance();
+  }
+  openModal('insurance-modal');
+}
+
+function submitInsurance(){
+  const name=document.getElementById('ins-name').value.trim();
+  if(!name){alert('Please enter a policy name.');return}
+  const rec={
+    id:editingInsurance||Date.now(),name,
+    insurer:document.getElementById('ins-insurer').value.trim(),
+    type:document.getElementById('ins-type').value,
+    policyNo:document.getElementById('ins-policy-no').value.trim(),
+    coverage:parseFloat(document.getElementById('ins-coverage').value)||0,
+    premium:parseFloat(document.getElementById('ins-premium').value)||0,
+    frequency:document.getElementById('ins-frequency').value,
+    startDate:document.getElementById('ins-start').value,
+    renewalDate:document.getElementById('ins-renewal').value,
+    nominee:document.getElementById('ins-nominee').value.trim(),
+    status:document.getElementById('ins-status').value,
+    notes:document.getElementById('ins-notes').value.trim()
+  };
+  let arr=load(KEYS.insurance);
+  arr=editingInsurance?arr.map(x=>x.id===editingInsurance?rec:x):[...arr,rec];
+  save(KEYS.insurance,arr);
+  closeModal('insurance-modal');
+  renderInsurance();updateSidebar();renderHome();
+}
+
+function renderInsurance(){
+  const all=load(KEYS.insurance);
+  const act=all.filter(x=>x.status==='Active');
+  const totCov=act.reduce((s,x)=>s+(x.coverage||0),0);
+  const annPrem=act.reduce((s,x)=>s+(x.premium||0)*(INS_FREQ[x.frequency]||1),0);
+  document.getElementById('ins-total-coverage').textContent=fmtINR(totCov);
+  document.getElementById('ins-policy-count').textContent=act.length+' active polic'+(act.length===1?'y':'ies');
+  document.getElementById('ins-annual-premium').textContent=fmtINR(Math.round(annPrem));
+  document.getElementById('ins-monthly-cost').textContent=fmtINR(Math.round(annPrem/12));
+  document.getElementById('insurance-sub').textContent=all.length+' polic'+(all.length===1?'y':'ies');
+  const today=todayStr();
+  const nxt=act.filter(x=>x.renewalDate&&x.renewalDate>=today).sort((a,b)=>a.renewalDate.localeCompare(b.renewalDate));
+  document.getElementById('ins-next-renewal').textContent=nxt.length?nxt[0].renewalDate:'—';
+  document.getElementById('ins-next-renewal-name').textContent=nxt.length?nxt[0].name:'No upcoming renewals';
+  const types=['Health','Life','Vehicle','Accidental'];
+  document.getElementById('ins-coverage-breakdown').innerHTML=types.map(t=>{
+    const v=act.filter(x=>x.type===t).reduce((s,x)=>s+(x.coverage||0),0);
+    const pct=totCov>0?Math.round(v/totCov*100):0;const c=INS_COLOR[t];
+    return `<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:12px;color:var(--text2)">${t}</span><span style="font-family:var(--mono);font-size:12px;color:${c}">${v?fmtINR(v):'—'}</span></div><div class="fo-progress-track"><div class="fo-progress-fill" style="width:${pct}%;background:${c}"></div></div></div>`;
+  }).join('');
+  document.getElementById('ins-premium-breakdown').innerHTML=types.map(t=>{
+    const v=act.filter(x=>x.type===t).reduce((s,x)=>s+(x.premium||0)*(INS_FREQ[x.frequency]||1),0);
+    const pct=annPrem>0?Math.round(v/annPrem*100):0;const c=INS_COLOR[t];
+    return `<div style="margin-bottom:12px"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:12px;color:var(--text2)">${t}</span><span style="font-family:var(--mono);font-size:12px;color:${c}">${v?fmtINR(Math.round(v))+'/yr':'—'}</span></div><div class="fo-progress-track"><div class="fo-progress-fill" style="width:${pct}%;background:${c}"></div></div></div>`;
+  }).join('');
+  const tbody=document.getElementById('insurance-tbody');
+  const empty=document.getElementById('insurance-empty');
+  if(!all.length){tbody.innerHTML='';empty.style.display='';return}
+  empty.style.display='none';
+  tbody.innerHTML=all.map(x=>{
+    const eid=x.id,c=INS_COLOR[x.type]||'var(--text2)';
+    const sc=x.status==='Active'?'var(--up)':x.status==='Lapsed'?'var(--down)':'var(--amber)';
+    const ann=(x.premium||0)*(INS_FREQ[x.frequency]||1);
+    const days=x.renewalDate?Math.ceil((new Date(x.renewalDate)-new Date())/864e5):null;
+    const ren=x.renewalDate?(days!==null&&days<=30&&days>=0?`<span style="color:var(--down)">${x.renewalDate} ⚠</span>`:x.renewalDate):'—';
+    return `<tr>
+      <td style="font-weight:500">${x.name}${x.policyNo?`<div style="font-size:10px;color:var(--text3);font-family:var(--mono)">${x.policyNo}</div>`:''}</td>
+      <td style="color:var(--text2)">${x.insurer||'—'}</td>
+      <td><span class="fo-badge" style="background:${c}22;color:${c};border:1px solid ${c}44">${x.type}</span></td>
+      <td style="font-family:var(--mono);color:var(--c-insurance);font-weight:600">${x.coverage?fmtINR(x.coverage):'—'}</td>
+      <td style="font-family:var(--mono)">${fmtINR(x.premium||0)}</td>
+      <td style="font-family:var(--mono);font-size:11px;color:var(--text3)">${x.frequency}<div style="font-size:10px">${fmtINR(Math.round(ann))}/yr</div></td>
+      <td style="font-family:var(--mono);font-size:12px">${ren}</td>
+      <td><span class="fo-badge" style="background:${sc}22;color:${sc}">${x.status}</span></td>
+      <td style="font-size:12px;color:var(--text3)">${x.nominee||'—'}</td>
+      <td><div style="display:flex;gap:4px;justify-content:flex-end">
+        <button onclick="openInsuranceModal(${eid})" style="background:rgba(124,106,247,.15);border:1px solid rgba(124,106,247,.3);color:#a29bfe;border-radius:5px;padding:3px 9px;font-size:10px;cursor:pointer">Edit</button>
+        <button onclick="delRecord('insurance',${eid})" style="background:rgba(255,92,106,.1);border:1px solid rgba(255,92,106,.25);color:#ff5c6a;border-radius:5px;padding:3px 9px;font-size:10px;cursor:pointer">Del</button>
+      </div></td>
+    </tr>`;
+  }).join('');
+}
+
+// ── NET WORTH ──
+function getNetWorthData(){
+  const mfAll=load(KEYS.mf),ppfAll=load(KEYS.ppf),goldAll=load(KEYS.gold),loanAll=load(KEYS.loans);
+  const inc=load(KEYS.income),exp=load(KEYS.expenses);
+  let tradePnl=0;
+  try{
+    const tdTrades=JSON.parse(localStorage.getItem('td_trades')||'[]');
+    tradePnl=tdTrades.reduce((s,t)=>{
+      if(t.sellPrice) return s+(t.sellPrice-t.buyPrice)*t.totalQty-(t.charges||0);
+      if(t.cmp) return s+(t.cmp-t.buyPrice)*t.totalQty;
+      return s;
+    },0);
+  }catch(e){}
+  const mfVal=mfAll.reduce((s,x)=>s+x.current,0);
+  const ppfVal=ppfAll.reduce((s,x)=>s+x.balance,0);
+  const goldVal=goldAll.reduce((s,x)=>s+x.qty*(x.cmp||x.buy),0);
+  const loans=loanAll.reduce((s,x)=>s+x.outstanding,0);
+  const savings=inc.reduce((s,x)=>s+x.amount,0)-exp.reduce((s,x)=>s+x.amount,0);
+  const _insAll=load(KEYS.insurance),_IF={Monthly:12,Quarterly:4,'Half-Yearly':2,Annually:1};
+  const insAnnualPremium=_insAll.filter(x=>x.status==='Active').reduce((s,x)=>s+(x.premium||0)*(_IF[x.frequency]||1),0);
+  const insCoverage=_insAll.filter(x=>x.status==='Active').reduce((s,x)=>s+(x.coverage||0),0);
+  return{tradePnl,mfVal,ppfVal,goldVal,loans,savings,insAnnualPremium,insCoverage,
+    totalAssets:Math.max(0,tradePnl)+mfVal+ppfVal+goldVal+Math.max(0,savings),
+    totalLiabilities:loans+Math.max(0,-savings)+insAnnualPremium,
+    netWorth:Math.max(0,tradePnl)+mfVal+ppfVal+goldVal+savings-loans-insAnnualPremium};
+}
+function renderNetWorth(){
+  const d=getNetWorthData();
+  document.getElementById('nw-total').textContent=fmtINR(d.netWorth);
+  document.getElementById('nw-total').className='nw-hero-val '+pnlCls(d.netWorth);
+  document.getElementById('nw-sub').textContent=`Assets ${fmtINR(d.totalAssets)} − Liabilities ${fmtINR(d.totalLiabilities)}`;
+  document.getElementById('nw-assets-card').innerHTML=[
+    ['Trading P&L',d.tradePnl,'var(--c-trade)'],
+    ['MF / SIP / FD',d.mfVal,'var(--c-mf)'],
+    ['PPF',d.ppfVal,'var(--c-ppf)'],
+    ['Gold',d.goldVal,'var(--c-gold)'],
+    ['Cash Savings',Math.max(0,d.savings),'var(--up)'],
+  ].map(([l,v,c])=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">
+    <div style="display:flex;align-items:center;gap:8px"><div style="width:6px;height:6px;border-radius:50%;background:${c}"></div><span style="font-size:12px;color:var(--text2)">${l}</span></div>
+    <span class="${pnlCls(v)}" style="font-family:var(--mono);font-size:13px;font-weight:600">${fmtINR(v)}</span>
+  </div>`).join('')+`<div style="display:flex;justify-content:space-between;padding:12px 0 0"><span style="font-weight:700;font-size:13px">Total Assets</span><span class="val-up" style="font-family:var(--mono);font-size:14px;font-weight:700">${fmtINR(d.totalAssets)}</span></div>`;
+  document.getElementById('nw-liabilities-card').innerHTML=[
+    ['Loans & Credit',d.loans,'var(--c-loans)'],
+    ['Annual Premiums',d.insAnnualPremium,'var(--c-insurance)'],
+    ['Negative Cash',Math.max(0,-d.savings),'var(--down)'],
+  ].map(([l,v,c])=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)">
+    <div style="display:flex;align-items:center;gap:8px"><div style="width:6px;height:6px;border-radius:50%;background:${c}"></div><span style="font-size:12px;color:var(--text2)">${l}</span></div>
+    <span class="val-down" style="font-family:var(--mono);font-size:13px;font-weight:600">${v>0?fmtINR(v):'—'}</span>
+  </div>`).join('')+`<div style="display:flex;justify-content:space-between;padding:12px 0 0"><span style="font-weight:700;font-size:13px">Total Liabilities</span><span class="val-down" style="font-family:var(--mono);font-size:14px;font-weight:700">${fmtINR(d.totalLiabilities)}</span></div>`
+  +`<div style="margin-top:14px;padding:12px;background:rgba(0,180,216,0.08);border:1px solid rgba(0,180,216,0.2);border-radius:8px"><div style="font-size:10px;font-family:var(--mono);color:var(--c-insurance);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Protection Coverage</div><div style="display:flex;justify-content:space-between"><span style="font-size:12px;color:var(--text2)">Total Sum Assured</span><span style="font-family:var(--mono);font-size:13px;font-weight:600;color:var(--c-insurance)">${d.insCoverage?fmtINR(d.insCoverage):'—'}</span></div></div>`;
+}
+
+// ── HOME ──
+function renderHome(){
+  const d=getNetWorthData(),tm=thisMonth();
+  const inc=load(KEYS.income),exp=load(KEYS.expenses);
+  const mtdInc=inc.filter(x=>x.date.startsWith(tm)).reduce((s,x)=>s+x.amount,0);
+  const mtdExp=exp.filter(x=>x.date.startsWith(tm)).reduce((s,x)=>s+x.amount,0);
+  const goals=load(KEYS.goals);
+  let mtdTrade=0,mtdCount=0;
+  try{
+    const tr=JSON.parse(localStorage.getItem('td_trades')||'[]');
+    const mt=tr.filter(t=>t.date&&t.date.startsWith(tm));
+    mtdTrade=mt.reduce((s,t)=>s+(t.sellPrice?(t.sellPrice-t.buyPrice)*t.totalQty-(t.charges||0):t.cmp?(t.cmp-t.buyPrice)*t.totalQty:0),0);
+    mtdCount=mt.length;
+  }catch(e){}
+  document.getElementById('home-nw').textContent=fmtINR(d.netWorth);
+  document.getElementById('home-nw').className='nw-hero-val '+pnlCls(d.netWorth);
+  document.getElementById('home-trade').textContent=d.tradePnl?fmtINR(d.tradePnl):'—';
+  document.getElementById('home-trade').className='nw-item-val '+pnlCls(d.tradePnl);
+  document.getElementById('home-mf').textContent=d.mfVal?fmtINR(d.mfVal):'—';
+  document.getElementById('home-ppf').textContent=d.ppfVal?fmtINR(d.ppfVal):'—';
+  document.getElementById('home-gold').textContent=d.goldVal?fmtINR(d.goldVal):'—';
+  document.getElementById('home-loans').textContent=d.loans?fmtINR(d.loans):'—';
+  document.getElementById('home-savings').textContent=fmtINR(d.savings);
+  document.getElementById('home-savings').className='nw-item-val '+pnlCls(d.savings);
+  document.getElementById('home-mtd-income').textContent=fmtINR(mtdInc);
+  document.getElementById('home-mtd-income-sub').textContent=inc.filter(x=>x.date.startsWith(tm)).length+' entries';
+  document.getElementById('home-mtd-expense').textContent=fmtINR(mtdExp);
+  document.getElementById('home-mtd-expense-sub').textContent=exp.filter(x=>x.date.startsWith(tm)).length+' entries';
+  document.getElementById('home-mtd-savings').textContent=fmtINR(mtdInc-mtdExp);
+  document.getElementById('home-mtd-savings').className='fo-card-val '+pnlCls(mtdInc-mtdExp);
+  document.getElementById('home-mtd-trade').textContent=mtdCount?fmtINR(mtdTrade):'—';
+  document.getElementById('home-mtd-trade').className='fo-card-val '+pnlCls(mtdTrade);
+  document.getElementById('home-mtd-trade-sub').textContent=mtdCount+' trades this month';
+  document.getElementById('home-invested').textContent=fmtINR(d.mfVal+d.ppfVal+d.goldVal);
+  document.getElementById('home-liabilities').textContent=fmtINR(d.loans);
+  document.getElementById('home-goals-count').textContent=goals.filter(x=>x.saved<x.target).length;
+  document.getElementById('home-goals-sub').textContent=goals.filter(x=>x.saved>=x.target).length+' achieved';
+  const _iAll=load(KEYS.insurance),_iF={Monthly:12,Quarterly:4,'Half-Yearly':2,Annually:1};
+  const _iAct=_iAll.filter(x=>x.status==='Active');
+  const _iCov=_iAct.reduce((s,x)=>s+(x.coverage||0),0);
+  const _iAnn=_iAct.reduce((s,x)=>s+(x.premium||0)*(_iF[x.frequency]||1),0);
+  document.getElementById('home-ins-coverage').textContent=_iCov?fmtINR(_iCov):'—';
+  document.getElementById('home-ins-count').textContent=_iAct.length+' active polic'+(_iAct.length===1?'y':'ies');
+  document.getElementById('home-ins-premium').textContent=_iAnn?fmtINR(Math.round(_iAnn)):'—';
+  document.getElementById('home-ins-health').textContent=(()=>{const v=_iAct.filter(x=>x.type==='Health').reduce((s,x)=>s+(x.coverage||0),0);return v?fmtINR(v):'—';})();
+  document.getElementById('home-ins-life').textContent=(()=>{const v=_iAct.filter(x=>x.type==='Life').reduce((s,x)=>s+(x.coverage||0),0);return v?fmtINR(v):'—';})();
+  document.getElementById('home-insurance-premium').textContent=_iAnn?'−'+fmtINR(Math.round(_iAnn))+'/yr':'—';
+}
+
+// ── SIDEBAR ──
+function updateSidebar(){
+  const d=getNetWorthData(),tm=thisMonth();
+  const setNav=(id,v,cls)=>{const el=document.getElementById(id);if(el){el.textContent=v;if(cls)el.className='fo-nav-val '+cls;}};
+  setNav('nav-nw',fmtINR(d.netWorth),pnlCls(d.netWorth));
+  setNav('nav-trade',d.tradePnl?fmtINR(d.tradePnl):'—',pnlCls(d.tradePnl));
+  const inc=load(KEYS.income).filter(x=>x.date.startsWith(tm)).reduce((s,x)=>s+x.amount,0);
+  const exp=load(KEYS.expenses).filter(x=>x.date.startsWith(tm)).reduce((s,x)=>s+x.amount,0);
+  setNav('nav-income',inc?fmtINR(inc):'—');
+  setNav('nav-expenses',exp?fmtINR(exp):'—');
+  setNav('nav-mf',d.mfVal?fmtINR(d.mfVal):'—');
+  setNav('nav-ppf',d.ppfVal?fmtINR(d.ppfVal):'—');
+  setNav('nav-gold',d.goldVal?fmtINR(d.goldVal):'—');
+  setNav('nav-loans',d.loans?fmtINR(d.loans):'—');
+  const goals=load(KEYS.goals);
+  setNav('nav-goals',goals.length?goals.length+' goals':'—');
+  const _iNav=load(KEYS.insurance).filter(x=>x.status==='Active');
+  setNav('nav-insurance',_iNav.length?_iNav.length+' active':'—');
+  document.getElementById('fo-footer').textContent=Object.values(KEYS).reduce((s,k)=>s+load(k).length,0)+' records · Local storage';
+}
+
+// ── DELETE ──
+function delRecord(module,id){
+  const item=load(KEYS[module]).find(x=>x.id===id);
+  const name=item?(item.name||item.source||item.merchant||'this record'):'this record';
+  foConfirm(`Delete "${name}"? This cannot be undone.`,()=>{
+    save(KEYS[module],load(KEYS[module]).filter(x=>x.id!==id));
+    renderPage(currentPage);updateSidebar();renderHome();
+  });
+}
+
+// ── INIT ──
+document.addEventListener('DOMContentLoaded',()=>{
+  ['inc-date','exp-date','gold-date','loan-start','ppf-opened'].forEach(id=>{
+    const el=document.getElementById(id);if(el) el.value=todayStr();
+  });
+  renderHome();updateSidebar();
+});
+
+// ══════════════════════════════════════
+// TRADEDESK IIFE
+// ══════════════════════════════════════
+
+(function() {
+
+// ── State ──
+if(!localStorage.getItem('td_trades')){localStorage.setItem('td_trades',JSON.stringify([{"id": 111, "segment": "Intraday", "instrument": "NIFTY 24000 CE", "date": "2026-03-10", "exitDate": null, "type": "Buy", "strategy": "Momentum", "qty": 2, "lotSize": 50, "totalQty": 100, "buyPrice": 150, "sellPrice": null, "cmp": 180, "charges": 50, "pnl": -50, "roi": -0.33, "capital": 15000, "holdingDays": null, "cagr": null, "currency": "INR"}, {"id": 222, "segment": "Short Term", "instrument": "RELIANCE", "date": "2026-03-05", "exitDate": "2026-03-12", "type": "Buy", "strategy": "Swing", "qty": 10, "lotSize": 1, "totalQty": 10, "buyPrice": 2800, "sellPrice": 2950, "cmp": null, "charges": 100, "pnl": 1400, "roi": 5.0, "capital": 28000, "holdingDays": 7, "cagr": null, "currency": "INR"}, {"id": 333, "segment": "F&O", "instrument": "BANKNIFTY FUT", "date": "2026-03-11", "exitDate": null, "type": "Buy", "strategy": "Breakout", "qty": 1, "lotSize": 15, "totalQty": 15, "buyPrice": 48000, "sellPrice": null, "cmp": 49200, "charges": 0, "pnl": 0, "roi": 0, "capital": 720000, "holdingDays": null, "cagr": null, "currency": "INR"}]));}
+let trades = JSON.parse(localStorage.getItem('td_trades') || '[]');
+let segCapital = JSON.parse(localStorage.getItem('td_capital') || '{}');
+let tdSettings = JSON.parse(localStorage.getItem('td_settings') || '{"initialCapital":0}');
+let currentPeriod = 'monthly';
+let currentView = 'dashboard';
+let pnlChart = null;
+
+const SEGMENTS = ['Intraday','F&O','Commodity','Short Term','US Stocks','LT Invest'];
+const SEG_COLORS = { 'Intraday':'#3ecfff','F&O':'#7c6af7','Commodity':'#f5a623','Short Term':'#e040fb','US Stocks':'#00d4aa','LT Invest':'#ff7c52' };
+const SEG_BADGE  = { 'Intraday':'b-intraday','F&O':'b-fo','Commodity':'b-commodity','Short Term':'b-st','US Stocks':'b-us','LT Invest':'b-lt' };
+
+// Broker grouping — capital is managed at broker level
+const BROKERS = [
+  { key:'Indian Broker', label:'Indian Broker', broker:'Dhan',   color:'#7c6af7', segments:['Intraday','F&O','Commodity'] },
+  { key:'ST Broker',     label:'Short Term',    broker:'Upstox', color:'#e040fb', segments:['Short Term'] },
+  { key:'US Broker',     label:'US Stocks',     broker:'Manual', color:'#00d4aa', segments:['US Stocks'] },
+  { key:'LT Invest',     label:'LT / Investment',broker:'Fyers', color:'#ff7c52', segments:['LT Invest'] }
+];
+// CAP_SEGMENTS kept for backward compat — capital keys are now broker keys
+const CAP_SEGMENTS = BROKERS.map(b => b.key);
+
+function brokerOfSeg(seg) { return BROKERS.find(b => b.segments.includes(seg)) || BROKERS[0]; }
+
+const USD_INR = 83.5;
+
+// ── Init ──
+function init() {
+  const today = new Date();
+  document.getElementById('f-date').value = today.toISOString().split('T')[0];
+  renderSidebar();
+  renderAll();
+}
+
+function fmtINR(v) {
+  const abs = Math.abs(v);
+  let s;
+  if (abs >= 100000) s = '₹' + (abs/100000).toFixed(2) + 'L';
+  else if (abs >= 1000) s = '₹' + Math.round(abs).toLocaleString('en-IN');
+  else s = '₹' + Math.round(abs);
+  return (v < 0 ? '-' : '') + s;
+}
+function fmtPct(v) { return (v >= 0 ? '+' : '') + v.toFixed(2) + '%'; }
+function pnlClass(v) { return v > 0 ? 'val-up' : v < 0 ? 'val-down' : 'val-neutral'; }
+
+function calcPnL(t) {
+  // Realised: trade is closed (has sellPrice)
+  if (t.sellPrice) {
+    const gross = (t.sellPrice - t.buyPrice) * t.totalQty;
+    const net   = gross - (t.charges || 0);
+    return t.currency === 'USD' ? net * USD_INR : net;
+  }
+  // Unrealised: open trade with CMP entered
+  if (t.cmp) {
+    const unreal = (t.cmp - t.buyPrice) * t.totalQty;
+    return t.currency === 'USD' ? unreal * USD_INR : unreal;
+  }
+  return 0;
+}
+function toINR(trade) { return calcPnL(trade); }
+
+function realisedPnL(t) {
+  if (!t.sellPrice) return null;
+  const net = (t.sellPrice - t.buyPrice) * t.totalQty - (t.charges || 0);
+  return t.currency === 'USD' ? net * USD_INR : net;
+}
+function unrealisedPnL(t) {
+  if (t.sellPrice || !t.cmp) return null;
+  const unreal = (t.cmp - t.buyPrice) * t.totalQty;
+  return t.currency === 'USD' ? unreal * USD_INR : unreal;
+}
+
+function tradeDate(t) { return new Date(t.date); }
+
+// ── Period helpers ──
+function getMonthTrades(y, m) { return trades.filter(t => { const d = tradeDate(t); return d.getFullYear()===y && d.getMonth()===m; }); }
+function getWeekTrades(weekStart) {
+  const end = new Date(weekStart); end.setDate(end.getDate()+4);
+  return trades.filter(t => { const d = tradeDate(t); return d >= weekStart && d <= end; });
+}
+function getDayTrades(dateStr) { return trades.filter(t => t.date === dateStr); }
+
+function getWeeksInMonth(y, m) {
+  const weeks = [];
+  const first = new Date(y, m, 1);
+  // go back to monday
+  let mon = new Date(first);
+  mon.setDate(mon.getDate() - ((mon.getDay()+6)%7));
+  while (true) {
+    const fri = new Date(mon); fri.setDate(fri.getDate()+4);
+    const lastDay = new Date(y, m+1, 0);
+    if (mon > lastDay) break;
+    weeks.push(new Date(mon));
+    mon = new Date(mon); mon.setDate(mon.getDate()+7);
+  }
+  return weeks;
+}
+
+function segPnL(ts) {
+  const out = {};
+  SEGMENTS.forEach(s => out[s] = 0);
+  ts.forEach(t => out[t.segment] = (out[t.segment]||0) + toINR(t));
+  return out;
+}
+
+function totalPnL(ts) { return ts.reduce((a,t) => a + toINR(t), 0); }
+function totalCapital(ts) { return ts.reduce((a,t) => a + (t.capital||0), 0); }
+function roi(pnl, cap) { return cap > 0 ? (pnl/cap)*100 : 0; }
+function winRate(ts) { const w = ts.filter(t=>calcPnL(t)>0).length; return ts.length ? Math.round((w/ts.length)*100) : 0; }
+
+// ── Capital helpers ──
+function getAllocatedCapital(brokerKey) { return segCapital[brokerKey] || 0; }
+function getTotalAllocated() { return BROKERS.reduce((a,b) => a + getAllocatedCapital(b.key), 0); }
+
+// Capital invested = open trades belonging to all segments in this broker
+function getCapitalInvested(brokerKey) {
+  const segs = BROKERS.find(b=>b.key===brokerKey)?.segments || [brokerKey];
+  return trades.filter(t => segs.includes(t.segment) && !t.exitDate)
+    .reduce((a,t) => {
+      const capInr = t.currency === 'USD' ? (t.capital||0) * USD_INR : (t.capital||0);
+      return a + capInr;
+    }, 0);
+}
+function getTotalInvested() { return BROKERS.reduce((a,b) => a + getCapitalInvested(b.key), 0); }
+function getCapitalAvailable(brokerKey) { return Math.max(0, getAllocatedCapital(brokerKey) - getCapitalInvested(brokerKey)); }
+
+// Realised PnL — pass brokerKey or null for all
+function getRealisedPnL(brokerKey, ts) {
+  const pool = ts || trades;
+  const segs = brokerKey ? (BROKERS.find(b=>b.key===brokerKey)?.segments || [brokerKey]) : null;
+  return pool.filter(t => (!segs || segs.includes(t.segment)) && t.exitDate)
+    .reduce((a,t) => a + toINR(t), 0);
+}
+// Unrealised PnL
+function getUnrealisedPnL(brokerKey, ts) {
+  const pool = ts || trades;
+  const segs = brokerKey ? (BROKERS.find(b=>b.key===brokerKey)?.segments || [brokerKey]) : null;
+  return pool.filter(t => (!segs || segs.includes(t.segment)) && !t.exitDate)
+    .reduce((a,t) => a + toINR(t), 0);
+}
+function getRealisedROI(brokerKey) {
+  const cap = getAllocatedCapital(brokerKey) || 1;
+  return (getRealisedPnL(brokerKey) / cap) * 100;
+}
+function getUnrealisedROI(brokerKey) {
+  const invested = getCapitalInvested(brokerKey) || 1;
+  return (getUnrealisedPnL(brokerKey) / invested) * 100;
+}
+function getTotalRealisedROI() {
+  const tot = getTotalAllocated() || 1;
+  return (getRealisedPnL() / tot) * 100;
+}
+function getTotalUnrealisedROI() {
+  const inv = getTotalInvested() || 1;
+  return (getUnrealisedPnL() / inv) * 100;
+}
+
+// Segment-level realised/unrealised (for breakdown within a broker)
+function getSegRealisedPnL(seg, ts) {
+  const pool = ts || trades;
+  return pool.filter(t => t.segment===seg && t.exitDate).reduce((a,t)=>a+toINR(t),0);
+}
+function getSegUnrealisedPnL(seg, ts) {
+  const pool = ts || trades;
+  return pool.filter(t => t.segment===seg && !t.exitDate).reduce((a,t)=>a+toINR(t),0);
+}
+
+function dateStr(d) { return d.toISOString().split('T')[0]; }
+function weekLabel(mon) {
+  const fri = new Date(mon); fri.setDate(fri.getDate()+4);
+  return `${mon.getDate()} ${mon.toLocaleString('en',{month:'short'})} – ${fri.getDate()} ${fri.toLocaleString('en',{month:'short'})}`;
+}
+
+// ── Sidebar ──
+function renderSidebar() {
+  const el = document.getElementById('seg-legend');
+  el.innerHTML = BROKERS.map(b => {
+    const bTrades = trades.filter(t => b.segments.includes(t.segment));
+    const bPnl = totalPnL(bTrades);
+    const alloc = getAllocatedCapital(b.key);
+    return `<div style="margin-bottom:10px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+        <span style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:600;font-family:var(--mono);color:var(--text);">
+          <span style="width:7px;height:7px;border-radius:2px;background:${b.color};flex-shrink:0;display:inline-block;"></span>
+          <span>
+            ${b.label}
+            <span style="display:block;font-size:9px;font-weight:400;color:var(--text3);margin-top:1px;">${b.broker}</span>
+          </span>
+        </span>
+        <span class="${pnlClass(bPnl)}" style="font-size:10px;font-family:var(--mono);">${bTrades.length ? fmtINR(bPnl) : '—'}</span>
+      </div>
+      ${b.segments.map(s => {
+        const st = trades.filter(t=>t.segment===s);
+        const sp = totalPnL(st);
+        return `<div style="display:flex;justify-content:space-between;align-items:center;padding-left:13px;margin-bottom:2px;">
+          <span style="display:flex;align-items:center;gap:5px;font-size:10px;font-family:var(--mono);color:var(--text3);">
+            <span style="width:5px;height:5px;border-radius:50%;background:${SEG_COLORS[s]};flex-shrink:0;display:inline-block;"></span>${s}
+          </span>
+          <span class="${pnlClass(sp)}" style="font-size:10px;font-family:var(--mono);">${st.length ? fmtINR(sp) : '—'}</span>
+        </div>`;
+      }).join('')}
+      ${alloc > 0 ? `<div style="padding-left:13px;margin-top:4px;font-size:10px;font-family:var(--mono);color:var(--text3);">${fmtINR(getCapitalAvailable(b.key))} available</div>` : ''}
+    </div>`;
+  }).join('');
+  document.getElementById('trade-count-display').textContent = `${trades.length} trade${trades.length!==1?'s':''} logged`;
+  const cap = getTotalAllocated();
+  document.getElementById('capital-display').textContent = cap > 0 ? fmtINR(cap) + ' allocated' : '₹0 allocated';
+}
+
+// ── Main render ──
+function renderAll() {
+  renderSidebar();
+  if (currentView === 'dashboard') {
+    if (currentPeriod === 'monthly') renderMonthly();
+    else if (currentPeriod === 'weekly') renderWeekly();
+    else renderDaily();
+  } else if (currentView === 'trades') renderTradeLog();
+  else if (currentView === 'positions') renderPositions();
+  else if (currentView === 'capital') renderCapitalView();
+}
+
+function showView(v) {
+  currentView = v;
+  document.querySelectorAll('.nav-item').forEach((el,i) => {
+    el.classList.toggle('active', ['dashboard','trades','positions','capital'][i] === v);
+  });
+  renderAll();
+}
+
+function setPeriod(p, el) {
+  currentPeriod = p;
+  document.querySelectorAll('.ptab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  renderAll();
+}
+
+// ══════════════ MONTHLY VIEW ══════════════
+function renderMonthly() {
+  const now = new Date();
+  const y = now.getFullYear(), m = now.getMonth();
+  const mt = getMonthTrades(y, m);
+  const segPnl = segPnL(mt);
+  const total = totalPnL(mt);
+  const cap = totalCapital(mt) || 1;
+  const weeks = getWeeksInMonth(y, m);
+
+  document.getElementById('period-label').textContent = now.toLocaleString('en',{month:'long',year:'numeric'});
+  document.getElementById('period-sublabel').textContent = `${mt.length} trades · win rate ${winRate(mt)}%`;
+
+  // Build daily bar data
+  const daysInMonth = new Date(y, m+1, 0).getDate();
+  const dayPnls = [];
+  for (let d=1; d<=daysInMonth; d++) {
+    const ds = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    dayPnls.push({ label: String(d), val: totalPnL(getDayTrades(ds)) });
+  }
+
+  // Best/worst segment
+  let best = null, worst = null;
+  SEGMENTS.forEach(s => {
+    if (segPnl[s] !== 0) {
+      if (!best || segPnl[s] > segPnl[best]) best = s;
+      if (!worst || segPnl[s] < segPnl[worst]) worst = s;
+    }
+  });
+
+  // Weekly summary rows
+  const weekRows = weeks.map(wk => {
+    const wt = getWeekTrades(wk);
+    const wp = totalPnL(wt);
+    const wc = totalCapital(wt)||1;
+    const sp = segPnL(wt);
+    return { label: weekLabel(wk), pnl: wp, roi: roi(wp,wc), segPnl: sp, trades: wt.length, winRate: winRate(wt), mon: wk };
+  });
+
+  const totalAlloc = getTotalAllocated();
+  const totalInvested = getTotalInvested();
+  const totalAvail = Math.max(0, totalAlloc - totalInvested);
+  const totalRealised = getRealisedPnL();
+  const totalUnrealised = getUnrealisedPnL();
+  const totRoiR = getTotalRealisedROI();
+  const totRoiU = getTotalUnrealisedROI();
+
+  const html = `
+  <!-- ── CAPITAL OVERVIEW STRIP ── -->
+  ${totalAlloc > 0 ? `
+  <div class="cap-overview" style="grid-template-columns:repeat(4,minmax(0,1fr));margin-bottom:14px;">
+    <div class="cap-card highlight">
+      <div class="cap-label">Total capital allocated</div>
+      <div class="cap-value">${fmtINR(totalAlloc)}</div>
+      <div class="cap-split">
+        <div class="cap-split-item"><div class="lbl">Invested</div><div class="val" style="color:var(--amber);">${fmtINR(totalInvested)}</div></div>
+        <div class="cap-split-item"><div class="lbl">Available</div><div class="val" style="color:var(--up);">${fmtINR(totalAvail)}</div></div>
+      </div>
+    </div>
+    <div class="cap-card">
+      <div class="cap-label">Overall realised ROI</div>
+      <div class="cap-value ${pnlClass(totRoiR)}">${fmtPct(totRoiR)}</div>
+      <div class="cap-sub ${pnlClass(totalRealised)}">${fmtINR(totalRealised)} realised P&L</div>
+    </div>
+    <div class="cap-card">
+      <div class="cap-label">Overall unrealised ROI</div>
+      <div class="cap-value ${pnlClass(totRoiU)}">${fmtPct(totRoiU)}</div>
+      <div class="cap-sub ${pnlClass(totalUnrealised)}">${fmtINR(totalUnrealised)} on open positions</div>
+    </div>
+    <div class="cap-card">
+      <div class="cap-label">Capital utilisation</div>
+      <div class="cap-value" style="color:var(--amber);">${totalAlloc>0?Math.round((totalInvested/totalAlloc)*100):0}%</div>
+      <div class="cap-sub">${fmtINR(totalInvested)} of ${fmtINR(totalAlloc)}</div>
+    </div>
+  </div>
+  <!-- Broker capital cards -->
+  <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:14px;">
+    ${BROKERS.filter(b=>getAllocatedCapital(b.key)>0).map(b => {
+      const alloc = getAllocatedCapital(b.key);
+      const inv   = getCapitalInvested(b.key);
+      const avail = getCapitalAvailable(b.key);
+      const rPnl  = getRealisedPnL(b.key);
+      const uPnl  = getUnrealisedPnL(b.key);
+      const rRoi  = alloc > 0 ? (rPnl/alloc)*100 : 0;
+      const uRoi  = inv   > 0 ? (uPnl/inv)*100   : 0;
+      const used  = alloc > 0 ? Math.round((inv/alloc)*100) : 0;
+      return `<div class="seg-cap-card" style="border-top:3px solid ${b.color};">
+        <div class="seg-cap-row">
+          <span class="seg-cap-name" style="color:${b.color};">${b.label}</span>
+          <span class="seg-cap-total">${fmtINR(alloc)}</span>
+        </div>
+        <div style="font-size:9px;font-family:var(--mono);color:var(--text3);margin-bottom:6px;">${b.broker} · ${b.segments.join(' · ')}</div>
+        <div class="seg-cap-bar"><div class="seg-cap-bar-fill" style="width:${used}%;background:${b.color};opacity:.7;"></div></div>
+        <div style="display:flex;justify-content:space-between;font-size:10px;font-family:var(--mono);color:var(--text3);margin-bottom:8px;">
+          <span style="color:var(--amber);">Inv ${fmtINR(inv)}</span>
+          <span style="color:var(--up);">Avail ${fmtINR(avail)}</span>
+          <span>${used}% used</span>
+        </div>
+        <div class="roi-pair">
+          <div class="roi-box">
+            <div class="lbl">Realised ROI</div>
+            <div class="val ${pnlClass(rRoi)}">${fmtPct(rRoi)}</div>
+            <div style="font-size:10px;font-family:var(--mono);color:var(--text3);margin-top:2px;">${fmtINR(rPnl)}</div>
+          </div>
+          <div class="roi-box">
+            <div class="lbl">Unrealised ROI</div>
+            <div class="val ${pnlClass(uRoi)}">${inv>0?fmtPct(uRoi):'—'}</div>
+            <div style="font-size:10px;font-family:var(--mono);color:var(--text3);margin-top:2px;">${inv>0?fmtINR(uPnl):'No open pos.'}</div>
+          </div>
+        </div>
+      </div>`;
+    }).join('')}
+  </div>` : `<div style="background:var(--bg2);border:1px dashed var(--border2);border-radius:12px;padding:16px 20px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;">
+    <div><div style="font-size:13px;font-weight:600;color:var(--text);">Set your segment capital to unlock ROI tracking</div><div style="font-size:12px;color:var(--text3);font-family:var(--mono);margin-top:4px;">Capital available, invested and ROI will show here once configured</div></div>
+    <button class="add-btn" onclick="tdOpenCapModal()" style="flex-shrink:0;">⚙ Set Capital</button>
+  </div>`}
+
+  <!-- Initial / Cumulative Capital strip -->
+  ${(()=>{
+    const initCap = tdSettings.initialCapital || 0;
+    const allTimePnl = trades.reduce((a,t)=> t.exitDate ? a + toINR(t) : a, 0);
+    const cumCap = initCap + allTimePnl;
+    const allTimeUnreal = trades.filter(t=>!t.exitDate).reduce((a,t)=> a + (t.cmp ? (t.cmp - t.buyPrice)*t.totalQty*(t.currency==='USD'?83.5:1) : 0), 0);
+    if (!initCap) return '<div style="background:var(--bg3);border:1px dashed var(--border2);border-radius:10px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;"><div style="font-size:12px;font-family:var(--mono);color:var(--text3);">Set your initial capital to track cumulative returns</div><button class=\"add-btn\" onclick=\"tdOpenInitCapModal()\" style=\"flex-shrink:0;background:var(--bg4);border:1px solid var(--border2);color:var(--text2);\">⚙ Set Initial Capital</button></div>';
+    return `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;">
+      <div class="seg-cap-card" style="border-top:3px solid var(--accent2);">
+        <div class="cap-label">Initial Capital</div>
+        <div class="cap-value" style="color:var(--accent2);">${fmtINR(initCap)}</div>
+        <div class="cap-sub" style="color:var(--text3);">Starting capital <button onclick="tdOpenInitCapModal()" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:10px;font-family:var(--mono);">edit</button></div>
+      </div>
+      <div class="seg-cap-card" style="border-top:3px solid ${allTimePnl>=0?'var(--up)':'var(--down)'};">
+        <div class="cap-label">All-time Realised P&L</div>
+        <div class="cap-value ${pnlClass(allTimePnl)}">${fmtINR(allTimePnl)}</div>
+        <div class="cap-sub ${pnlClass(allTimePnl)}">${fmtPct((allTimePnl/initCap)*100)} on initial</div>
+      </div>
+      <div class="seg-cap-card" style="border-top:3px solid ${allTimeUnreal>=0?'var(--up)':'var(--down)'};">
+        <div class="cap-label">All-time Unrealised P&L</div>
+        <div class="cap-value ${pnlClass(allTimeUnreal)}">${allTimeUnreal?fmtINR(allTimeUnreal):'—'}</div>
+        <div class="cap-sub" style="color:var(--text3);">From open positions via CMP</div>
+      </div>
+      <div class="seg-cap-card" style="border-top:3px solid ${(cumCap-initCap)>=0?'var(--up)':'var(--down)'};">
+        <div class="cap-label">Cumulative Capital</div>
+        <div class="cap-value ${pnlClass(cumCap-initCap)}">${fmtINR(cumCap)}</div>
+        <div class="cap-sub ${pnlClass(cumCap-initCap)}">${fmtPct(((cumCap-initCap)/initCap)*100)} overall return</div>
+      </div>
+    </div>`;
+  })()}
+
+  <!-- Combined headline -->
+  <div class="metrics-grid" style="grid-template-columns:repeat(5,minmax(0,1fr));">
+    <div class="metric-card" style="grid-column:span 2;border-color:rgba(124,106,247,0.3);">
+      <div class="metric-label">MTD combined P&L</div>
+      <div class="metric-value ${pnlClass(total)}">${total===0?'₹0':fmtINR(total)}</div>
+      <div class="metric-sub ${pnlClass(total)}">${fmtPct(roi(total,cap))} ROI · ${mt.length} trades</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Best segment</div>
+      <div class="metric-value" style="font-size:16px;color:${best?SEG_COLORS[best]:'var(--text3)'};">${best||'—'}</div>
+      <div class="metric-sub val-up">${best?fmtINR(segPnl[best]):''}</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Worst segment</div>
+      <div class="metric-value" style="font-size:16px;color:${worst?SEG_COLORS[worst]:'var(--text3)'};">${worst||'—'}</div>
+      <div class="metric-sub val-down">${worst?fmtINR(segPnl[worst]):''}</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Win rate</div>
+      <div class="metric-value">${winRate(mt)}%</div>
+      <div class="metric-sub val-neutral">${mt.filter(t=>t.pnl>0).length} of ${mt.length} trades</div>
+    </div>
+  </div>
+
+  <!-- Segment breakdown -->
+  <div class="section-card">
+    <div class="section-title">Monthly P&L by segment</div>
+    ${mt.length === 0 ? `<div class="empty-state"><div class="big">📊</div>No trades logged yet.<br>Click <strong>+ Add Trade</strong> to get started.</div>` : `
+    <table class="seg-table">
+      <thead><tr>
+        <th>Segment</th><th>P&L</th><th>ROI %</th><th>Capital</th><th>Trades</th><th>Win %</th>
+      </tr></thead>
+      <tbody>
+        ${SEGMENTS.map(s => {
+          const st = mt.filter(t=>t.segment===s);
+          const sp = segPnl[s];
+          const sc = totalCapital(st)||1;
+          return `<tr>
+            <td><span class="seg-name"><span class="seg-dot" style="background:${SEG_COLORS[s]}"></span>${s}</span></td>
+            <td class="${pnlClass(sp)}">${st.length?fmtINR(sp):'—'}</td>
+            <td class="${pnlClass(sp)}">${st.length?fmtPct(roi(sp,sc)):'—'}</td>
+            <td style="color:var(--text2)">${st.length?fmtINR(totalCapital(st)):'—'}</td>
+            <td style="color:var(--text2)">${st.length}</td>
+            <td style="color:var(--text2)">${st.length?winRate(st)+'%':'—'}</td>
+          </tr>`;
+        }).join('')}
+        <tr>
+          <td><span class="seg-name"><span class="seg-dot" style="background:var(--text)"></span>Combined</span></td>
+          <td class="${pnlClass(total)}">${fmtINR(total)}</td>
+          <td class="${pnlClass(total)}">${fmtPct(roi(total,cap))}</td>
+          <td style="color:var(--text2)">${fmtINR(totalCapital(mt))}</td>
+          <td style="color:var(--text2)">${mt.length}</td>
+          <td style="color:var(--text2)">${winRate(mt)}%</td>
+        </tr>
+      </tbody>
+    </table>`}
+  </div>
+
+  <!-- Weekly summary within the month -->
+  <div class="section-card">
+    <div class="section-title">Weekly breakdown — ${now.toLocaleString('en',{month:'long'})}</div>
+    ${weekRows.length === 0 ? '<div class="empty-state">No weeks found</div>' : `
+    <div class="weeks-grid" style="grid-template-columns:repeat(${Math.min(weekRows.length,4)},1fr);">
+      ${weekRows.map((wk,i) => {
+        const days = ['M','T','W','T','F'];
+        const dayPips = days.map((_,di) => {
+          const d = new Date(wk.mon); d.setDate(d.getDate()+di);
+          if (d.getMonth() !== m) return `<div class="day-pip pip-flat" style="opacity:.3">${_}</div>`;
+          const dp = totalPnL(getDayTrades(dateStr(d)));
+          const cls = dp > 0 ? 'pip-up' : dp < 0 ? 'pip-down' : 'pip-flat';
+          return `<div class="day-pip ${cls}">${_}</div>`;
+        }).join('');
+        const activeSegs = SEGMENTS.filter(s => wk.segPnl[s] !== 0);
+        return `<div class="week-card">
+          <div class="week-header">
+            <div>
+              <div class="week-label">Week ${i+1}</div>
+              <div style="font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:2px;">${wk.label}</div>
+            </div>
+            <div style="text-align:right;">
+              <div class="week-pnl ${pnlClass(wk.pnl)}">${wk.pnl!==0?fmtINR(wk.pnl):'₹0'}</div>
+              <div class="week-roi ${pnlClass(wk.roi)}">${fmtPct(wk.roi)}</div>
+            </div>
+          </div>
+          <div class="day-strip">${dayPips}</div>
+          <div class="week-segs">
+            ${activeSegs.length === 0 ? '<div style="font-size:11px;font-family:var(--mono);color:var(--text3)">No trades</div>' :
+              activeSegs.map(s => `<div class="week-seg-row">
+                <span class="week-seg-name"><span class="seg-dot" style="background:${SEG_COLORS[s]}"></span>${s}</span>
+                <span class="${pnlClass(wk.segPnl[s])}" style="font-size:11px;font-family:var(--mono);">${fmtINR(wk.segPnl[s])}</span>
+              </div>`).join('')
+            }
+            <div style="border-top:1px solid var(--border);margin-top:4px;padding-top:5px;display:flex;justify-content:space-between;font-size:10px;font-family:var(--mono);color:var(--text3);">
+              <span>${wk.trades} trades</span><span>${wk.winRate}% win</span>
+            </div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`}
+  </div>
+
+  <!-- Daily bar chart -->
+  <div class="section-card">
+    <div class="section-title">Daily P&L — ${now.toLocaleString('en',{month:'long'})}</div>
+    <div id="bar-chart-wrap"></div>
+  </div>`;
+
+  document.getElementById('main-content').innerHTML = html;
+  renderBarChart(dayPnls);
+}
+
+function renderBarChart(dayPnls) {
+  const wrap = document.getElementById('bar-chart-wrap');
+  if (!wrap) return;
+  const nonZero = dayPnls.filter(d=>d.val!==0);
+  if (nonZero.length === 0) { wrap.innerHTML = '<div class="empty-state" style="padding:20px 0;">No trading days yet</div>'; return; }
+  const max = Math.max(...dayPnls.map(d=>Math.abs(d.val))) || 1;
+  wrap.innerHTML = `<div style="display:flex;align-items:flex-end;gap:3px;height:90px;padding:4px 0 0;">
+    ${dayPnls.map(d => {
+      const h = Math.max(2, Math.round((Math.abs(d.val)/max)*72));
+      const col = d.val>0?'var(--up)':d.val<0?'var(--down)':'var(--bg4)';
+      return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:80px;gap:2px;">
+        <div style="width:100%;height:${h}px;background:${col};border-radius:3px 3px 0 0;opacity:${d.val===0?.3:1};"></div>
+        <div style="font-size:8px;font-family:var(--mono);color:var(--text3);">${d.label}</div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+// ══════════════ WEEKLY VIEW ══════════════
+function renderWeekly() {
+  const now = new Date();
+  const y = now.getFullYear(), m = now.getMonth();
+  const weeks = getWeeksInMonth(y, m);
+
+  // Find current week
+  const today = dateStr(now);
+  let currentWeekIdx = weeks.findIndex(wk => {
+    const fri = new Date(wk); fri.setDate(fri.getDate()+4);
+    return now >= wk && now <= fri;
+  });
+  if (currentWeekIdx < 0) currentWeekIdx = weeks.length - 1;
+  const currentWk = weeks[currentWeekIdx];
+
+  document.getElementById('period-label').textContent = 'Week of ' + weekLabel(currentWk);
+  const wt = getWeekTrades(currentWk);
+  document.getElementById('period-sublabel').textContent = `${wt.length} trades · ${winRate(wt)}% win rate`;
+
+  const html = `
+  <!-- WTD summary -->
+  <div class="metrics-grid" style="grid-template-columns:repeat(5,minmax(0,1fr));">
+    ${weeks.map((wk,i) => {
+      const wts = getWeekTrades(wk);
+      const wp = totalPnL(wts);
+      const wc = totalCapital(wts)||1;
+      const isCur = i === currentWeekIdx;
+      return `<div class="metric-card" style="${isCur?'border-color:rgba(124,106,247,.4);':''} ">
+        <div class="metric-label" style="${isCur?'color:var(--accent);':''}">Week ${i+1}${isCur?' (current)':''}</div>
+        <div class="metric-value ${pnlClass(wp)}" style="font-size:${isCur?'24':'18'}px;">${wp!==0?fmtINR(wp):'₹0'}</div>
+        <div class="metric-sub ${pnlClass(roi(wp,wc))}">${fmtPct(roi(wp,wc))} · ${wts.length} trades</div>
+      </div>`;
+    }).join('')}
+  </div>
+
+  <!-- Segment P&L for EACH week side by side -->
+  <div class="section-card">
+    <div class="section-title">Segment P&L per week — ${now.toLocaleString('en',{month:'long'})}</div>
+    <table class="seg-table">
+      <thead><tr>
+        <th>Segment</th>
+        ${weeks.map((wk,i)=>`<th>Wk ${i+1}<br><span style="color:var(--text3);font-size:9px;">${wk.getDate()} ${wk.toLocaleString('en',{month:'short'})}</span></th>`).join('')}
+        <th>MTD Total</th>
+      </tr></thead>
+      <tbody>
+        ${SEGMENTS.map(s => {
+          const wkCells = weeks.map(wk => {
+            const p = totalPnL(getWeekTrades(wk).filter(t=>t.segment===s));
+            return `<td class="${pnlClass(p)}">${p!==0?fmtINR(p):'—'}</td>`;
+          }).join('');
+          const mtp = totalPnL(getMonthTrades(y,m).filter(t=>t.segment===s));
+          return `<tr>
+            <td><span class="seg-name"><span class="seg-dot" style="background:${SEG_COLORS[s]}"></span>${s}</span></td>
+            ${wkCells}
+            <td class="${pnlClass(mtp)}" style="font-weight:600;">${mtp!==0?fmtINR(mtp):'—'}</td>
+          </tr>`;
+        }).join('')}
+        <tr>
+          <td><span class="seg-name"><span class="seg-dot" style="background:var(--text)"></span>Combined</span></td>
+          ${weeks.map(wk => {
+            const p = totalPnL(getWeekTrades(wk));
+            return `<td class="${pnlClass(p)}">${p!==0?fmtINR(p):'—'}</td>`;
+          }).join('')}
+          <td class="${pnlClass(totalPnL(getMonthTrades(y,m)))}" style="font-weight:600;">${fmtINR(totalPnL(getMonthTrades(y,m)))}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Current week: day-by-day -->
+  <div class="section-card">
+    <div class="section-title">Current week — day by day (${weekLabel(currentWk)})</div>
+    <table class="seg-table">
+      <thead><tr>
+        <th>Day</th><th>Segments active</th><th>P&L</th><th>ROI</th><th>Trades</th><th>Win %</th>
+      </tr></thead>
+      <tbody>
+        ${['Mon','Tue','Wed','Thu','Fri'].map((_,di) => {
+          const d = new Date(currentWk); d.setDate(d.getDate()+di);
+          if (d.getMonth() !== m) return '';
+          const ds = dateStr(d);
+          const dt = getDayTrades(ds);
+          const dp = totalPnL(dt);
+          const dc = totalCapital(dt)||1;
+          const segs = [...new Set(dt.map(t=>t.segment))];
+          return `<tr>
+            <td style="font-weight:500;">${_} ${d.getDate()}</td>
+            <td>${segs.length ? segs.map(s=>`<span class="badge ${SEG_BADGE[s]}" style="margin-right:3px;">${s}</span>`).join('') : '<span style="color:var(--text3);font-size:11px;">—</span>'}</td>
+            <td class="${pnlClass(dp)}">${dt.length?fmtINR(dp):'—'}</td>
+            <td class="${pnlClass(roi(dp,dc))}">${dt.length?fmtPct(roi(dp,dc)):'—'}</td>
+            <td style="color:var(--text2)">${dt.length||'—'}</td>
+            <td style="color:var(--text2)">${dt.length?winRate(dt)+'%':'—'}</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+  </div>`;
+
+  document.getElementById('main-content').innerHTML = html;
+}
+
+// ══════════════ DAILY VIEW ══════════════
+function renderDaily() {
+  const now = new Date();
+  const today = dateStr(now);
+  const dt = getDayTrades(today);
+  const dp = totalPnL(dt);
+  const dc = totalCapital(dt)||1;
+  const realised   = dt.reduce((a,t) => a + (realisedPnL(t) || 0), 0);
+  const unrealised = dt.reduce((a,t) => a + (unrealisedPnL(t) || 0), 0);
+
+  document.getElementById('period-label').textContent = now.toLocaleDateString('en-IN',{weekday:'short',day:'numeric',month:'long',year:'numeric'});
+  document.getElementById('period-sublabel').textContent = `${dt.length} trades today`;
+
+  const segPnl = segPnL(dt);
+
+  const html = `
+  <!-- Today headline -->
+  <div class="metrics-grid" style="grid-template-columns:repeat(5,minmax(0,1fr));">
+    <div class="metric-card" style="grid-column:span 2;border-color:rgba(62,207,255,.25);">
+      <div class="metric-label">Today's combined P&L</div>
+      <div class="metric-value ${pnlClass(dp)}">${dp!==0?fmtINR(dp):'₹0'}</div>
+      <div class="metric-sub ${pnlClass(roi(dp,dc))}">${fmtPct(roi(dp,dc))} ROI · ${dt.length} trades</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Realised</div>
+      <div class="metric-value ${pnlClass(realised)}" style="font-size:20px;">${fmtINR(realised)}</div>
+      <div class="metric-sub val-neutral">Closed trades</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Unrealised</div>
+      <div class="metric-value ${pnlClass(unrealised)}" style="font-size:20px;">${fmtINR(unrealised)}</div>
+      <div class="metric-sub val-neutral">Open trades</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Win rate</div>
+      <div class="metric-value">${winRate(dt)}%</div>
+      <div class="metric-sub val-neutral">${dt.filter(t=>t.pnl>0).length}W · ${dt.filter(t=>t.pnl<=0).length}L</div>
+    </div>
+  </div>
+
+  <!-- Today by segment - horizontal cards -->
+  <div class="section-card" style="margin-bottom:14px;">
+    <div class="section-title">Today by segment</div>
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;">
+      ${SEGMENTS.map(s => {
+        const st = dt.filter(t=>t.segment===s);
+        const sp = segPnl[s];
+        const sr = st.reduce((a,t) => a + (realisedPnL(t) || 0), 0);
+        const su = st.reduce((a,t) => a + (unrealisedPnL(t) || 0), 0);
+        const sc = totalCapital(st)||1;
+        return `<div style="background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px;border-top:2px solid ${SEG_COLORS[s]};">
+          <div style="font-size:10px;font-family:var(--mono);color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em;">${s}</div>
+          <div style="font-size:15px;font-weight:700;font-family:var(--mono);" class="${pnlClass(sp)}">${st.length?fmtINR(sp):'—'}</div>
+          <div style="font-size:10px;font-family:var(--mono);color:var(--text3);margin-top:4px;">${st.length?fmtPct(roi(sp,sc)):''} · ${st.length}T</div>
+          <div style="display:flex;gap:8px;margin-top:8px;">
+            <div><div style="font-size:9px;color:var(--text3);font-family:var(--mono);">REAL</div><div style="font-size:11px;font-family:var(--mono);" class="${pnlClass(sr)}">${st.length?fmtINR(sr):'—'}</div></div>
+            <div><div style="font-size:9px;color:var(--text3);font-family:var(--mono);">UNREAL</div><div style="font-size:11px;font-family:var(--mono);" class="${pnlClass(su)}">${st.length?fmtINR(su):'—'}</div></div>
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>
+
+  <!-- Trade log today - full width below -->
+  <div class="section-card">
+    <div class="section-title">Trade log — today</div>
+    ${dt.length === 0 ? '<div class="empty-state" style="padding:20px 0;"><div class="big">📋</div>No trades logged today.</div>' : `
+    <div style="overflow-x:auto;">
+    <table class="trade-table">
+      <thead><tr><th>Instrument</th><th>Segment</th><th>Side</th><th>Qty</th><th>Buy</th><th>Sell</th><th>CMP</th><th>Realised P&L</th><th>Unrealised P&L</th><th>ROI</th><th></th></tr></thead>
+      <tbody>
+        ${dt.map(t => {
+          const rPnl = realisedPnL(t);
+          const uPnl = unrealisedPnL(t);
+          const activePnl = rPnl !== null ? rPnl : (uPnl !== null ? uPnl : 0);
+          const roiVal = t.capital > 0 ? (activePnl / t.capital * 100) : 0;
+          const tid = t.id;
+          return `<tr>
+            <td style="font-weight:500;">${t.instrument}</td>
+            <td><span class="badge ${SEG_BADGE[t.segment]}">${t.segment}</span></td>
+            <td class="${t.type==='Buy'?'side-buy':'side-sell'}">${t.type}</td>
+            <td style="color:var(--text2)">${t.qty}</td>
+            <td style="color:var(--text2)">${t.buyPrice||'—'}</td>
+            <td style="color:var(--text2)">${t.sellPrice||'—'}</td>
+            <td style="color:var(--amber)">${t.cmp||'—'}</td>
+            <td class="${pnlClass(rPnl)}">${rPnl!==null?fmtINR(rPnl):'—'}</td>
+            <td class="${pnlClass(uPnl)}">${uPnl!==null?fmtINR(uPnl):'—'}</td>
+            <td class="${pnlClass(roiVal)}">${fmtPct(roiVal)}</td>
+            <td><div style="display:flex;gap:4px;">
+              <button style="background:rgba(124,106,247,0.15);border:1px solid rgba(124,106,247,0.3);color:#a29bfe;border-radius:5px;padding:3px 9px;font-size:10px;cursor:pointer;" onclick="tdEditTrade(${tid})">Edit</button>
+              <button style="background:rgba(255,92,106,0.1);border:1px solid rgba(255,92,106,0.25);color:#ff5c6a;border-radius:5px;padding:3px 9px;font-size:10px;cursor:pointer;" onclick="tdDeleteTrade(${tid})">Del</button>
+            </div></td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table></div>`}
+  </div>`;
+
+  document.getElementById('main-content').innerHTML = html;
+}
+
+// ══════════════ TRADE LOG VIEW ══════════════
+function renderTradeLog() {
+  document.getElementById('period-label').textContent = 'All Trades';
+  document.getElementById('period-sublabel').textContent = trades.length + ' total';
+  const sorted = [...trades].sort((a,b) => new Date(b.date) - new Date(a.date));
+  const mc = document.getElementById('main-content');
+  if (sorted.length === 0) {
+    mc.innerHTML = '<div class="section-card"><div class="section-title">Complete trade log</div><div class="empty-state"><div class="big">📋</div>No trades logged yet.</div></div>';
+    return;
+  }
+  let rows = '';
+  sorted.forEach(function(t) {
+    const rPnl = realisedPnL(t);
+    const uPnl = unrealisedPnL(t);
+    const roiVal = t.capital > 0 ? ((rPnl !== null ? rPnl : uPnl !== null ? uPnl : 0) / t.capital * 100) : 0;
+    const editId = t.id;
+    rows += '<tr>'
+      + '<td style="color:var(--text2)">' + t.date + '</td>'
+      + '<td style="font-weight:500">' + t.instrument + '</td>'
+      + '<td><span class="badge ' + SEG_BADGE[t.segment] + '">' + t.segment + '</span></td>'
+      + '<td style="color:var(--text2)">' + t.strategy + '</td>'
+      + '<td class="' + (t.type==='Buy' ? 'side-buy' : 'side-sell') + '">' + t.type + '</td>'
+      + '<td style="color:var(--text2)">' + t.qty + '</td>'
+      + '<td style="color:var(--text2)">' + (t.buyPrice || '—') + '</td>'
+      + '<td style="color:var(--text2)">' + (t.sellPrice || '—') + '</td>'
+      + '<td style="color:var(--amber)">' + (t.cmp || '—') + '</td>'
+      + '<td class="' + pnlClass(rPnl) + '">' + (rPnl !== null ? fmtINR(rPnl) : '—') + '</td>'
+      + '<td class="' + pnlClass(uPnl) + '">' + (uPnl !== null ? fmtINR(uPnl) : '—') + '</td>'
+      + '<td class="' + pnlClass(roiVal) + '">' + fmtPct(roiVal) + '</td>'
+      + '<td class="' + pnlClass(t.cagr) + '">' + (t.cagr ? fmtPct(t.cagr) : '—') + '</td>'
+      + '<td style="color:var(--text2)">' + (t.holdingDays || '—') + '</td>'
+      + (t.segment==='Intraday' ? '<td style="color:var(--amber);font-family:var(--mono);font-size:11px;">' + (t.leverage && t.leverage > 1 ? t.leverage+'x' : '—') + '</td><td style="color:var(--text2);font-family:var(--mono);font-size:11px;">' + (t.marginUsed ? fmtINR(t.marginUsed) : '—') + '</td><td style="color:var(--text2);font-family:var(--mono);font-size:11px;">' + (t.notional ? fmtINR(t.notional) : '—') + '</td>' : '<td colspan="3" style="color:var(--text3);text-align:center;">—</td>')
+      + '<td><div style="display:flex;gap:4px;justify-content:flex-end;">'
+      + '<button style="background:rgba(124,106,247,0.15);border:1px solid rgba(124,106,247,0.3);color:#a29bfe;border-radius:5px;padding:3px 9px;font-size:10px;cursor:pointer;" onclick="tdEditTrade(' + editId + ')">Edit</button>'
+      + '<button style="background:rgba(255,92,106,0.1);border:1px solid rgba(255,92,106,0.25);color:#ff5c6a;border-radius:5px;padding:3px 9px;font-size:10px;cursor:pointer;" onclick="tdDeleteTrade(' + editId + ')">Del</button>'
+      + '</div></td>'
+      + '</tr>';
+  });
+  mc.innerHTML = '<div class="section-card"><div class="section-title">Complete trade log</div>'
+    + '<div style="overflow-x:auto;"><table class="trade-table"><thead><tr>'
+    + '<th>Date</th><th>Instrument</th><th>Segment</th><th>Strategy</th><th>Side</th>'
+    + '<th>Qty</th><th>Buy</th><th>Sell</th><th>CMP</th>'
+    + '<th>Realised P&amp;L</th><th>Unrealised P&amp;L</th>'
+    + '<th>ROI</th><th>CAGR</th><th>Days</th><th>Lev</th><th>Margin Used</th><th>Notional</th><th></th>'
+    + '</tr></thead><tbody>' + rows + '</tbody></table></div></div>';
+}
+
+// ══════════════ POSITIONS VIEW ══════════════
+function renderPositions() {
+  document.getElementById('period-label').textContent = 'Open Positions';
+  const open = trades.filter(function(t) { return !t.exitDate; });
+  document.getElementById('period-sublabel').textContent = open.length + ' open';
+  const mc = document.getElementById('main-content');
+  if (open.length === 0) {
+    mc.innerHTML = '<div class="section-card"><div class="section-title">Open / live positions</div><div class="empty-state"><div class="big">🟢</div>No open positions.</div></div>';
+    return;
+  }
+  let rows = '';
+  open.forEach(function(t) {
+    const uPnl      = unrealisedPnL(t);
+    const unrealRoi = uPnl !== null && t.capital > 0 ? (uPnl / t.capital) * 100 : null;
+    const editId = t.id;
+    rows += '<tr>'
+      + '<td style="color:var(--text2)">' + t.date + '</td>'
+      + '<td style="font-weight:500">' + t.instrument + '</td>'
+      + '<td><span class="badge ' + SEG_BADGE[t.segment] + '">' + t.segment + '</span></td>'
+      + '<td class="' + (t.type==='Buy' ? 'side-buy' : 'side-sell') + '">' + t.type + '</td>'
+      + '<td style="color:var(--text2)">' + t.qty + '</td>'
+      + '<td style="color:var(--text2)">' + (t.buyPrice || '—') + '</td>'
+      + '<td style="color:var(--amber)">' + (t.cmp || '—') + '</td>'
+      + '<td class="' + pnlClass(uPnl) + '">' + (uPnl !== null ? fmtINR(uPnl) : '<span style="color:var(--text3);font-size:10px;">Enter CMP</span>') + '</td>'
+      + '<td class="' + pnlClass(unrealRoi) + '">' + (unrealRoi !== null ? fmtPct(unrealRoi) : '—') + '</td>'
+      + (t.segment==='Intraday' ? '<td style="color:var(--amber);font-family:var(--mono);font-size:11px;">' + (t.leverage && t.leverage > 1 ? t.leverage+'x' : '—') + '</td><td style="color:var(--text2);font-family:var(--mono);font-size:11px;">' + (t.marginUsed ? fmtINR(t.marginUsed) : '—') + '</td><td style="color:var(--text2);font-family:var(--mono);font-size:11px;">' + (t.notional ? fmtINR(t.notional) : '—') + '</td>' : '<td colspan="3" style="color:var(--text3);text-align:center;">—</td>')
+      + '<td><div style="display:flex;gap:4px;justify-content:flex-end;">'
+      + '<button style="background:rgba(124,106,247,0.15);border:1px solid rgba(124,106,247,0.3);color:#a29bfe;border-radius:5px;padding:3px 9px;font-size:10px;cursor:pointer;" onclick="tdEditTrade(' + editId + ')">Edit</button>'
+      + '<button style="background:rgba(255,92,106,0.1);border:1px solid rgba(255,92,106,0.25);color:#ff5c6a;border-radius:5px;padding:3px 9px;font-size:10px;cursor:pointer;" onclick="tdDeleteTrade(' + editId + ')">Del</button>'
+      + '</div></td>'
+      + '</tr>';
+  });
+  mc.innerHTML = '<div class="section-card"><div class="section-title">Open / live positions</div>'
+    + '<div style="overflow-x:auto;"><table class="trade-table"><thead><tr>'
+    + '<th>Date</th><th>Instrument</th><th>Segment</th><th>Side</th>'
+    + '<th>Qty</th><th>Buy Price</th><th>CMP</th>'
+    + '<th>Unrealised P&amp;L</th><th>ROI</th><th>Lev</th><th>Margin Used</th><th>Notional</th><th></th>'
+    + '</tr></thead><tbody>' + rows + '</tbody></table></div></div>';
+}
+
+// ══════════════ FORM LOGIC ══════════════
+function updateInstrumentHints() {
+  const seg = document.getElementById('f-segment').value;
+  const cur = document.getElementById('f-currency');
+  const ls = document.getElementById('f-lotsize');
+  const ql = document.getElementById('qty-label');
+  if (seg === 'US Stocks') { cur.value = 'USD'; }
+  else { cur.value = 'INR'; }
+  if (seg === 'F&O' || seg === 'Commodity') {
+    ql.textContent = 'Lots';
+    if (seg === 'F&O') ls.value = '50';
+    else ls.value = '100';
+  } else {
+    ql.textContent = 'Qty / Lots';
+    ls.value = '1';
+  }
+  // Show leverage field only for Intraday
+  const showLev = seg === 'Intraday';
+  document.getElementById('leverage-field').style.display = showLev ? '' : 'none';
+  document.getElementById('leverage-calc-row').style.display = showLev ? '' : 'none';
+  if (showLev) { if (!document.getElementById('f-leverage').value || document.getElementById('f-leverage').value == '1') document.getElementById('f-leverage').value = '5'; } else { document.getElementById('f-leverage').value = '1'; }
+  calcFields();
+}
+
+function calcFields() {
+  const qty     = parseFloat(document.getElementById('f-qty').value)     || 0;
+  const lotSize = parseFloat(document.getElementById('f-lotsize').value) || 1;
+  const buy     = parseFloat(document.getElementById('f-buy').value)     || 0;
+  const sell    = parseFloat(document.getElementById('f-sell').value)    || 0;
+  const cmp     = parseFloat(document.getElementById('f-cmp').value)     || 0;
+  const charges = parseFloat(document.getElementById('f-charges').value) || 0;
+  const leverage= parseFloat(document.getElementById('f-leverage').value)|| 1;
+  const seg     = document.getElementById('f-segment').value;
+  const entryDate = document.getElementById('f-date').value;
+  const exitDate  = document.getElementById('f-exit-date').value;
+
+  const totalQty   = qty * lotSize;
+  const notional   = buy * totalQty;                          // full value
+  const isIntraday = seg === 'Intraday';
+  const marginUsed = isIntraday && leverage > 1 ? notional / leverage : notional;
+  const capital    = marginUsed;                              // ROI based on margin
+
+  // Sell filled = realised; CMP filled (no sell) = unrealised preview
+  const price    = sell || cmp || buy;
+  const grossPnl = (price - buy) * totalQty;
+  const netPnl   = grossPnl - (sell ? charges : 0);
+  const roiVal        = capital > 0 ? (netPnl / capital) * 100 : 0;
+  const roiNotional   = notional > 0 ? (netPnl / notional) * 100 : 0;
+
+  let holdingDays = 0, cagrVal = 0;
+  if (entryDate && exitDate) {
+    const ms = new Date(exitDate) - new Date(entryDate);
+    holdingDays = Math.max(1, Math.ceil(ms / 86400000));
+    if (capital > 0) cagrVal = (Math.pow(1 + netPnl/capital, 365/holdingDays) - 1) * 100;
+  }
+
+  const isRealised   = sell > 0;
+  const isUnrealised = cmp > 0 && !sell;
+  const hasValue     = isRealised || isUnrealised;
+
+  document.querySelector('.calc-item label').textContent = isRealised ? 'P&L (realised)' : isUnrealised ? 'P&L (unrealised)' : 'P&L';
+
+  const pnlEl   = document.getElementById('calc-pnl');
+  const roiEl   = document.getElementById('calc-roi');
+  const daysEl  = document.getElementById('calc-days');
+  const cagrEl  = document.getElementById('calc-cagr');
+  const capEl   = document.getElementById('calc-capital');
+  const grossEl = document.getElementById('calc-gross');
+
+  pnlEl.textContent   = hasValue ? (netPnl>=0?'+':'')+netPnl.toFixed(2) : '—';
+  pnlEl.className     = hasValue ? (netPnl>=0?'val-up':'val-down') : 'val-neutral';
+  roiEl.textContent   = hasValue ? fmtPct(roiVal) : '—';
+  roiEl.className     = hasValue ? (roiVal>=0?'val-up':'val-down') : 'val-neutral';
+  daysEl.textContent  = holdingDays || (exitDate ? '1' : '—');
+  cagrEl.textContent  = cagrVal ? fmtPct(cagrVal) : '—';
+  cagrEl.className    = cagrVal >= 0 ? 'val-up' : 'val-down';
+  capEl.textContent   = notional > 0 ? '₹'+notional.toFixed(0) : '—';
+  grossEl.textContent = hasValue ? (grossPnl>=0?'+':'')+grossPnl.toFixed(2) : '—';
+  grossEl.className   = hasValue ? (grossPnl>=0?'val-up':'val-down') : 'val-neutral';
+
+  // Leverage-specific display
+  if (isIntraday) {
+    const marginEl    = document.getElementById('calc-margin');
+    const levEl       = document.getElementById('calc-lev');
+    const roiMarginEl = document.getElementById('calc-roi-margin');
+    marginEl.textContent    = marginUsed > 0 ? '₹'+marginUsed.toFixed(0) : '—';
+    levEl.textContent       = leverage > 1 ? leverage+'x' : '1x (no leverage)';
+    roiMarginEl.textContent = hasValue ? fmtPct(roiVal) : '—';
+    roiMarginEl.className   = hasValue ? (roiVal>=0?'val-up':'val-down') : 'val-neutral';
+  }
+}
+
+let editingTradeId = null;
+
+function openModal() {
+  editingTradeId = null;
+  document.getElementById('modal-title').textContent = 'Add Trade';
+  document.getElementById('modal-submit-btn').textContent = 'Log Trade';
+  // Clear form
+  document.getElementById('f-instrument').value = '';
+  document.getElementById('f-buy').value = '';
+  document.getElementById('f-sell').value = '';
+  document.getElementById('f-cmp').value = '';
+  document.getElementById('f-charges').value = '0';
+  document.getElementById('f-leverage').value = '5';
+  document.getElementById('f-exit-date').value = '';
+  document.getElementById('modal').classList.add('open');
+  updateInstrumentHints();
+}
+
+function editTrade(id) {
+  const t = trades.find(tr => String(tr.id) === String(id));
+  if (!t) return;
+  editingTradeId = t.id;
+  document.getElementById('f-segment').value    = t.segment;
+  document.getElementById('f-instrument').value = t.instrument;
+  document.getElementById('f-date').value       = t.date;
+  document.getElementById('f-exit-date').value  = t.exitDate || '';
+  document.getElementById('f-type').value       = t.type;
+  document.getElementById('f-strategy').value   = t.strategy;
+  document.getElementById('f-qty').value        = t.qty;
+  document.getElementById('f-lotsize').value    = t.lotSize;
+  document.getElementById('f-buy').value        = t.buyPrice || '';
+  document.getElementById('f-sell').value       = t.sellPrice || '';
+  document.getElementById('f-cmp').value        = t.cmp || '';
+  document.getElementById('f-charges').value    = t.charges || 0;
+  document.getElementById('f-currency').value   = t.currency || 'INR';
+  document.getElementById('f-leverage').value   = t.leverage || 1;
+  document.getElementById('modal-title').textContent = 'Edit Trade';
+  document.getElementById('modal-submit-btn').textContent = 'Save Changes';
+  document.getElementById('modal').classList.add('open');
+  calcFields();
+}
+
+function deleteTrade(id) {
+  const t = trades.find(tr => String(tr.id) === String(id));
+  if (!t) return;
+  const modal = document.getElementById('confirm-modal');
+  document.getElementById('confirm-msg').textContent = 'Delete "' + t.instrument + '"? This cannot be undone.';
+  modal.classList.add('open');
+  document.getElementById('confirm-yes').onclick = function() {
+    modal.classList.remove('open');
+    trades = trades.filter(tr => String(tr.id) !== String(id));
+    localStorage.setItem('td_trades', JSON.stringify(trades));
+    renderAll();
+  };
+  document.getElementById('confirm-no').onclick = function() {
+    modal.classList.remove('open');
+  };
+}
+function closeModal() { document.getElementById('modal').classList.remove('open'); }
+
+document.getElementById('modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('modal')) closeModal();
+});
+
+function submitTrade() {
+  const instrument = document.getElementById('f-instrument').value.trim();
+  const date = document.getElementById('f-date').value;
+  if (!instrument || !date) { alert('Please fill instrument and date.'); return; }
+
+  const qty = parseFloat(document.getElementById('f-qty').value)||1;
+  const lotSize = parseFloat(document.getElementById('f-lotsize').value)||1;
+  const buy = parseFloat(document.getElementById('f-buy').value)||0;
+  const sell = parseFloat(document.getElementById('f-sell').value)||0;
+  const charges = parseFloat(document.getElementById('f-charges').value)||0;
+  const exitDate = document.getElementById('f-exit-date').value;
+  const totalQty   = qty * lotSize;
+  const segment    = document.getElementById('f-segment').value;
+  const leverage   = segment === 'Intraday' ? (parseFloat(document.getElementById('f-leverage').value)||1) : 1;
+  const notional   = buy * totalQty;
+  const marginUsed = segment === 'Intraday' && leverage > 1 ? notional / leverage : notional;
+  const capital    = marginUsed;
+  const grossPnl   = (sell - buy) * totalQty;
+  const netPnl     = grossPnl - charges;
+  const roiVal     = capital > 0 ? (netPnl / capital) * 100 : 0;
+
+  let holdingDays = 0, cagrVal = 0;
+  if (date && exitDate) {
+    const ms = new Date(exitDate) - new Date(date);
+    holdingDays = Math.max(1, Math.ceil(ms / 86400000));
+    if (capital > 0) cagrVal = (Math.pow(1 + netPnl/capital, 365/holdingDays) - 1) * 100;
+  }
+
+  const cmp = parseFloat(document.getElementById('f-cmp').value) || 0;
+
+  const trade = {
+    id: Date.now(),
+    segment,
+    instrument,
+    date,
+    exitDate: exitDate || null,
+    type: document.getElementById('f-type').value,
+    strategy: document.getElementById('f-strategy').value,
+    qty,
+    lotSize,
+    totalQty,
+    buyPrice: buy,
+    sellPrice: sell || null,
+    cmp: cmp || null,
+    charges,
+    leverage,
+    notional,
+    marginUsed,
+    pnl: netPnl,
+    roi: roiVal,
+    capital,
+    holdingDays: holdingDays || null,
+    cagr: cagrVal || null,
+    currency: document.getElementById('f-currency').value
+  };
+
+  if (editingTradeId !== null) {
+    const idx = trades.findIndex(t => t.id === editingTradeId);
+    if (idx !== -1) { trade.id = editingTradeId; trades[idx] = trade; }
+    editingTradeId = null;
+  } else {
+    trades.push(trade);
+  }
+  localStorage.setItem('td_trades', JSON.stringify(trades));
+  closeModal();
+
+  // Reset form
+  document.getElementById('f-instrument').value = '';
+  document.getElementById('f-buy').value = '';
+  document.getElementById('f-sell').value = '';
+  document.getElementById('f-cmp').value = '';
+  document.getElementById('f-charges').value = '0';
+  document.getElementById('f-exit-date').value = '';
+  calcFields();
+
+  renderAll();
+}
+
+// ══════════════ CAPITAL VIEW ══════════════
+function renderCapitalView() {
+  document.getElementById('period-label').textContent = 'Capital Manager';
+  const totalAlloc = getTotalAllocated();
+  const totalInvested = getTotalInvested();
+  const totalAvail = Math.max(0, totalAlloc - totalInvested);
+  const totalRealised = getRealisedPnL();
+  const totalUnrealised = getUnrealisedPnL();
+  document.getElementById('period-sublabel').textContent = `${fmtINR(totalAlloc)} total allocated · 3 brokers`;
+
+  document.getElementById('main-content').innerHTML = `
+  <!-- Overall summary -->
+  <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:20px;">
+    <div class="cap-card highlight" style="grid-column:span 2;">
+      <div class="cap-label">Total capital — all brokers</div>
+      <div class="cap-value">${totalAlloc > 0 ? fmtINR(totalAlloc) : '—'}</div>
+      <div class="cap-split" style="margin-top:12px;">
+        <div class="cap-split-item"><div class="lbl">Capital invested</div><div class="val" style="color:var(--amber);font-size:18px;">${fmtINR(totalInvested)}</div></div>
+        <div class="cap-split-item"><div class="lbl">Capital available</div><div class="val" style="color:var(--up);font-size:18px;">${fmtINR(totalAvail)}</div></div>
+        <div class="cap-split-item"><div class="lbl">Utilisation</div><div class="val" style="font-size:18px;">${totalAlloc>0?Math.round((totalInvested/totalAlloc)*100):0}%</div></div>
+      </div>
+    </div>
+    <div class="cap-card">
+      <div class="cap-label">Overall realised ROI</div>
+      <div class="cap-value ${pnlClass(getTotalRealisedROI())}" style="font-size:28px;">${fmtPct(getTotalRealisedROI())}</div>
+      <div class="cap-sub ${pnlClass(totalRealised)}">${fmtINR(totalRealised)} total realised P&L</div>
+      <div style="font-size:10px;font-family:var(--mono);color:var(--text3);margin-top:4px;">on ${fmtINR(totalAlloc)} allocated</div>
+    </div>
+    <div class="cap-card">
+      <div class="cap-label">Overall unrealised ROI</div>
+      <div class="cap-value ${pnlClass(getTotalUnrealisedROI())}" style="font-size:28px;">${totalInvested>0?fmtPct(getTotalUnrealisedROI()):'—'}</div>
+      <div class="cap-sub ${pnlClass(totalUnrealised)}">${fmtINR(totalUnrealised)} on open positions</div>
+      <div style="font-size:10px;font-family:var(--mono);color:var(--text3);margin-top:4px;">on ${fmtINR(totalInvested)} invested</div>
+    </div>
+  </div>
+
+  <!-- Broker-level summary table -->
+  <div class="section-card" style="margin-bottom:14px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <div class="section-title" style="margin-bottom:0;">Broker-wise capital breakdown</div>
+      <button class="add-btn" style="font-size:12px;padding:6px 14px;" onclick="tdOpenCapModal()">⚙ Edit Capital</button>
+    </div>
+    ${totalAlloc === 0 ? `<div class="empty-state"><div class="big">💰</div>No capital allocated yet.<br>Click <strong>Edit Capital</strong> to set up your broker allocations.</div>` : `
+    <table class="seg-table">
+      <thead><tr>
+        <th>Broker</th>
+        <th>Allocated</th>
+        <th>Invested</th>
+        <th>Available</th>
+        <th>Used %</th>
+        <th>Realised P&L</th>
+        <th>Realised ROI</th>
+        <th>Unrealised P&L</th>
+        <th>Unrealised ROI</th>
+      </tr></thead>
+      <tbody>
+        ${BROKERS.map(b => {
+          const alloc = getAllocatedCapital(b.key);
+          const inv   = getCapitalInvested(b.key);
+          const avail = getCapitalAvailable(b.key);
+          const rPnl  = getRealisedPnL(b.key);
+          const uPnl  = getUnrealisedPnL(b.key);
+          const rRoi  = alloc > 0 ? (rPnl/alloc)*100 : 0;
+          const uRoi  = inv   > 0 ? (uPnl/inv)*100   : 0;
+          const used  = alloc > 0 ? Math.round((inv/alloc)*100) : 0;
+          return `<tr>
+            <td>
+              <span class="seg-name">
+                <span class="seg-dot" style="background:${b.color};border-radius:2px;"></span>
+                <span>
+                  <span style="display:block;">${b.label}</span>
+                  <span style="font-size:9px;color:${b.color};font-weight:500;">${b.broker}</span>
+                  <span style="font-size:9px;color:var(--text3);font-weight:400;display:block;">${b.segments.join(' · ')}</span>
+                </span>
+              </span>
+            </td>
+            <td style="color:var(--text)">${alloc>0?fmtINR(alloc):'—'}</td>
+            <td style="color:var(--amber)">${inv>0?fmtINR(inv):'—'}</td>
+            <td style="color:var(--up)">${alloc>0?fmtINR(avail):'—'}</td>
+            <td style="color:var(--text2)">${alloc>0?used+'%':'—'}</td>
+            <td class="${pnlClass(rPnl)}">${alloc>0?fmtINR(rPnl):'—'}</td>
+            <td class="${pnlClass(rRoi)}">${alloc>0?fmtPct(rRoi):'—'}</td>
+            <td class="${pnlClass(uPnl)}">${alloc>0?fmtINR(uPnl):'—'}</td>
+            <td class="${pnlClass(uRoi)}">${inv>0?fmtPct(uRoi):'—'}</td>
+          </tr>`;
+        }).join('')}
+        <tr>
+          <td><span class="seg-name"><span class="seg-dot" style="background:var(--text);border-radius:2px;"></span>All brokers</span></td>
+          <td style="color:var(--text)">${fmtINR(totalAlloc)}</td>
+          <td style="color:var(--amber)">${fmtINR(totalInvested)}</td>
+          <td style="color:var(--up)">${fmtINR(totalAvail)}</td>
+          <td style="color:var(--text2)">${totalAlloc>0?Math.round((totalInvested/totalAlloc)*100)+'%':'—'}</td>
+          <td class="${pnlClass(totalRealised)}">${fmtINR(totalRealised)}</td>
+          <td class="${pnlClass(getTotalRealisedROI())}">${fmtPct(getTotalRealisedROI())}</td>
+          <td class="${pnlClass(totalUnrealised)}">${fmtINR(totalUnrealised)}</td>
+          <td class="${pnlClass(getTotalUnrealisedROI())}">${totalInvested>0?fmtPct(getTotalUnrealisedROI()):'—'}</td>
+        </tr>
+      </tbody>
+    </table>`}
+  </div>
+
+  <!-- Broker deep-dive cards (one per broker, segments listed inside) -->
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+    ${BROKERS.map(b => {
+      const alloc = getAllocatedCapital(b.key);
+      const inv   = getCapitalInvested(b.key);
+      const avail = getCapitalAvailable(b.key);
+      const rPnl  = getRealisedPnL(b.key);
+      const uPnl  = getUnrealisedPnL(b.key);
+      const rRoi  = alloc > 0 ? (rPnl/alloc)*100 : 0;
+      const uRoi  = inv   > 0 ? (uPnl/inv)*100   : 0;
+      const used  = alloc > 0 ? Math.round((inv/alloc)*100) : 0;
+      const bTrades = trades.filter(t => b.segments.includes(t.segment));
+      return `<div class="seg-cap-card" style="border-top:3px solid ${b.color};">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+          <div>
+            <div class="seg-cap-name" style="color:${b.color};font-size:14px;">${b.label}</div>
+            <div style="font-size:10px;font-family:var(--mono);color:var(--text3);margin-top:2px;font-weight:600;">${b.broker}</div>
+            <div style="font-size:10px;font-family:var(--mono);color:var(--text3);margin-top:3px;">${b.segments.map(s=>`<span style="color:${SEG_COLORS[s]};">${s}</span>`).join(' · ')}</div>
+            <div style="font-size:10px;font-family:var(--mono);color:var(--text3);margin-top:2px;">${bTrades.length} trades · ${winRate(bTrades)}% win</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:18px;font-weight:700;font-family:var(--mono);color:var(--text);">${alloc>0?fmtINR(alloc):'Not set'}</div>
+            <div style="font-size:10px;font-family:var(--mono);color:var(--text3);">allocated</div>
+          </div>
+        </div>
+        ${alloc > 0 ? `
+        <div class="seg-cap-bar"><div class="seg-cap-bar-fill" style="width:${used}%;background:${b.color};opacity:.7;"></div></div>
+        <div style="display:flex;justify-content:space-between;font-size:10px;font-family:var(--mono);color:var(--text3);margin-bottom:10px;">
+          <span>${used}% used</span>
+          <span style="color:var(--amber);">${fmtINR(inv)} invested</span>
+          <span style="color:var(--up);">${fmtINR(avail)} free</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+          <div style="background:var(--bg3);border-radius:8px;padding:10px 12px;">
+            <div style="font-size:9px;font-family:var(--mono);color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">Realised P&L</div>
+            <div style="font-size:17px;font-weight:700;font-family:var(--mono);" class="${pnlClass(rPnl)}">${fmtINR(rPnl)}</div>
+            <div style="font-size:11px;font-family:var(--mono);margin-top:3px;" class="${pnlClass(rRoi)}">ROI ${fmtPct(rRoi)}</div>
+          </div>
+          <div style="background:var(--bg3);border-radius:8px;padding:10px 12px;">
+            <div style="font-size:9px;font-family:var(--mono);color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px;">Unrealised P&L</div>
+            <div style="font-size:17px;font-weight:700;font-family:var(--mono);" class="${pnlClass(uPnl)}">${inv>0?fmtINR(uPnl):'—'}</div>
+            <div style="font-size:11px;font-family:var(--mono);margin-top:3px;" class="${pnlClass(uRoi)}">${inv>0?'ROI '+fmtPct(uRoi):'No open pos.'}</div>
+          </div>
+        </div>
+        <!-- Segment breakdown inside the broker card -->
+        <div style="border-top:1px solid var(--border);padding-top:8px;display:flex;flex-direction:column;gap:5px;">
+          ${b.segments.map(s => {
+            const sR = getSegRealisedPnL(s);
+            const sU = getSegUnrealisedPnL(s);
+            const st = trades.filter(t=>t.segment===s);
+            return `<div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;font-family:var(--mono);">
+              <span style="display:flex;align-items:center;gap:5px;color:var(--text2);">
+                <span style="width:5px;height:5px;border-radius:50%;background:${SEG_COLORS[s]};flex-shrink:0;"></span>${s}
+                <span style="color:var(--text3);font-size:10px;">(${st.length})</span>
+              </span>
+              <span>
+                <span class="${pnlClass(sR)}" style="margin-right:8px;">R: ${st.filter(t=>t.exitDate).length?fmtINR(sR):'—'}</span>
+                <span class="${pnlClass(sU)}">U: ${st.filter(t=>!t.exitDate).length?fmtINR(sU):'—'}</span>
+              </span>
+            </div>`;
+          }).join('')}
+        </div>` : `
+        <div style="text-align:center;padding:20px 0;font-size:12px;font-family:var(--mono);color:var(--text3);">
+          No capital set<br><button onclick="tdOpenCapModal()" style="margin-top:8px;background:none;border:1px solid var(--border2);color:var(--accent);border-radius:6px;padding:4px 12px;cursor:pointer;font-size:11px;font-family:var(--mono);">Set capital →</button>
+        </div>`}
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+// ══════════════ CAPITAL MODAL ══════════════
+function openCapModal() {
+  const fields = document.getElementById('cap-modal-fields');
+  fields.innerHTML = BROKERS.map(b => `
+    <div class="cap-modal-seg">
+      <div class="cap-modal-seg-header">
+        <div class="cap-modal-seg-name">
+          <span style="width:9px;height:9px;border-radius:2px;background:${b.color};display:inline-block;"></span>
+          ${b.label}
+          <span style="font-size:11px;font-weight:600;color:${b.color};margin-left:4px;">(${b.broker})</span>
+          <span style="font-size:10px;font-weight:400;color:var(--text3);margin-left:4px;">${b.segments.join(', ')}</span>
+        </div>
+        <div style="font-size:11px;font-family:var(--mono);color:var(--text3);">
+          ${getCapitalInvested(b.key)>0?`${fmtINR(getCapitalInvested(b.key))} in open positions`:'No open positions'}
+        </div>
+      </div>
+      <div class="cap-input-row">
+        <div class="field">
+          <label>Total capital allocated (₹)</label>
+          <input type="number" id="cap-${b.key.replace(/[^a-z0-9]/gi,'_')}" value="${getAllocatedCapital(b.key)||''}" placeholder="e.g. 500000" oninput="updateCapTotal()">
+        </div>
+        <div class="field">
+          <label>Currently invested (auto)</label>
+          <input type="text" value="${getCapitalInvested(b.key)>0?fmtINR(getCapitalInvested(b.key)):'—'}" disabled style="opacity:.5;cursor:not-allowed;">
+        </div>
+      </div>
+    </div>
+  `).join('');
+  updateCapTotal();
+  document.getElementById('cap-modal').classList.add('open');
+}
+
+function updateCapTotal() {
+  let total = 0;
+  BROKERS.forEach(b => {
+    const el = document.getElementById('cap-'+b.key.replace(/[^a-z0-9]/gi,'_'));
+    if (el) total += parseFloat(el.value)||0;
+  });
+  document.getElementById('cap-modal-total').textContent = fmtINR(total);
+}
+
+function closeCapModal() { document.getElementById('cap-modal').classList.remove('open'); }
+
+function saveCapital() {
+  BROKERS.forEach(b => {
+    const el = document.getElementById('cap-'+b.key.replace(/[^a-z0-9]/gi,'_'));
+    if (el) segCapital[b.key] = parseFloat(el.value)||0;
+  });
+  localStorage.setItem('td_capital', JSON.stringify(segCapital));
+  closeCapModal();
+  renderAll();
+}
+
+document.getElementById('cap-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('cap-modal')) closeCapModal();
+});
+
+function openInitCapModal() {
+  document.getElementById('f-init-cap').value = tdSettings.initialCapital || '';
+  document.getElementById('init-cap-modal').classList.add('open');
+}
+function closeInitCapModal() {
+  document.getElementById('init-cap-modal').classList.remove('open');
+}
+function saveInitCap() {
+  const v = parseFloat(document.getElementById('f-init-cap').value) || 0;
+  tdSettings.initialCapital = v;
+  localStorage.setItem('td_settings', JSON.stringify(tdSettings));
+  closeInitCapModal();
+  renderAll();
+}
+document.getElementById('init-cap-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('init-cap-modal')) closeInitCapModal();
+});
+  // -- Expose TD functions to global scope --
+  window.tdSetPeriod              = setPeriod;
+  window.tdShowView               = showView;
+  window.tdOpenModal              = openModal;
+  window.tdCloseModal             = closeModal;
+  window.tdSubmitTrade            = submitTrade;
+  window.tdOpenCapModal           = openCapModal;
+  window.tdCloseCapModal          = closeCapModal;
+  window.tdSaveCapital            = saveCapital;
+  window.tdOpenInitCapModal       = openInitCapModal;
+  window.tdCloseInitCapModal      = closeInitCapModal;
+  window.tdSaveInitCap            = saveInitCap;
+  window.tdEditTrade              = editTrade;
+  window.tdDeleteTrade            = deleteTrade;
+  window.tdCalcFields             = calcFields;
+  window.tdUpdateInstrumentHints  = updateInstrumentHints;
+  window.tdRenderAll              = renderAll;
+  window.tdInit = function() { init(); };
+})();
+
+</script>
+</body>
+</html>
